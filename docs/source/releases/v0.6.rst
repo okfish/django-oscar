@@ -122,6 +122,10 @@ Oscar:
 * The index, catalogue and order dashboard views have been modified to allow
   access to non-staff users. See :doc:`/ref/apps/dashboard` for details.
 
+* :attr:`oscar.apps.partner.abstract_models.AbstractPartner.users` was not
+  used by core Oscar prior 0.6. It is now used to model access for the
+  permission-based dashboard.
+
 Payment models have abstract versions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -235,6 +239,10 @@ Minor changes
 * detox_ is a new dependency, which allows running `tox` tests in parallel.
 
 .. _detox: https://pypi.python.org/pypi/detox
+
+* ``OSCAR_ALLOW_ANON_REVIEWS`` has been a documented setting since Oscar 0.4.
+  But there's never been any code to support this, so the setting has been
+  dropped.
 
 Backwards incompatible changes in 0.6
 =====================================
