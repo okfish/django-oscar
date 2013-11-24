@@ -422,9 +422,14 @@ class CategoryDeleteView(CategoryListMixin, generic.DeleteView):
 
 class ProductLookupView(ObjectLookupView):
     model = Product
-
+    
     def get_query_set(self):
-        return self.model.browsable.all()
-
+        user = self.request.user
+        if user.is_staff:
+            return self.model.browsable.all()
+        else:
+            return self.model.browsable.filter(
+                stockrecords__partner__users__pk=user.pk).distinct()
+ 
     def lookup_filter(self, qs, term):
         return qs.filter(Q(title__icontains=term) | Q(parent__title__icontains=term))
