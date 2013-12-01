@@ -18,9 +18,11 @@ class ProductIndex(indexes.SearchIndex, indexes.Indexable):
     title = indexes.EdgeNgramField(model_attr='title', null=True)
 
     # Fields for faceting
+    product_class = indexes.CharField(null=True, faceted=True)
     category = indexes.CharField(null=True, faceted=True)
     price = indexes.DecimalField(null=True, faceted=True)
     num_in_stock = indexes.IntegerField(null=True, faceted=True)
+    rating = indexes.IntegerField(null=True, faceted=True)
 
     date_created = indexes.DateTimeField(model_attr='date_created')
     date_updated = indexes.DateTimeField(model_attr='date_updated')
@@ -32,15 +34,26 @@ class ProductIndex(indexes.SearchIndex, indexes.Indexable):
         # Only index browsable products (not each individual variant)
         return self.get_model().browsable.order_by('-date_updated')
 
+    def read_queryset(self, using=None):
+        return self.get_model().browsable.base_queryset()
+
+    def prepare_product_class(self, obj):
+        return obj.product_class.name
+
     def prepare_category(self, obj):
         categories = obj.categories.all()
         if len(categories) > 0:
             return categories[0].full_name
 
+    def prepare_rating(self, obj):
+        if obj.rating is not None:
+            return int(obj.rating)
+
     def prepare_price(self, obj):
-        # Pricing is tricky as product do not necessarily have a single price
+        # Pricing is tricky as products do not necessarily have a single price
         # (although that is the most common scenario).
         if obj.has_stockrecords:
+            # Fetch a "default" stockinfo
             result = strategy.fetch(obj)
             if result.price.is_tax_known:
                 return result.price.incl_tax
@@ -49,7 +62,7 @@ class ProductIndex(indexes.SearchIndex, indexes.Indexable):
     def prepare_num_in_stock(self, obj):
         if obj.has_stockrecords:
             result = strategy.fetch(obj)
-            return result.stockrecord.num_in_stock
+            return result.stockrecord.net_stock_level
 
     def get_updated_field(self):
         """
