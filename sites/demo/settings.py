@@ -256,7 +256,7 @@ INSTALLED_APPS = [
 # - an order app to provide order processing logic
 from oscar import get_core_apps
 INSTALLED_APPS = INSTALLED_APPS + get_core_apps(
-    ['apps.shipping', 'apps.order'])
+    ['apps.shipping', 'apps.order', 'apps.catalogue'])
 
 AUTHENTICATION_BACKENDS = (
     'oscar.apps.customer.auth_backends.Emailbackend',
