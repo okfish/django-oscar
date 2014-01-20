@@ -1,0 +1,75 @@
+{% extends "checkout/checkout.html" %}
+
+{% load url from future %}
+{% load currency_filters %}
+{% load i18n %}
+
+{% block title %}
+    {% trans "Payment method" %} | {{ block.super }}
+{% endblock %}
+
+{% block checkout_nav %}
+    {% include 'checkout/nav.html' with step=3 %}
+{% endblock %}
+
+{% block checkout_title %}{% trans "Payment method" %}{% endblock %}
+
+{% block order_contents %}{% endblock %}
+{% block shipping_address %}{% endblock %}
+
+{% block payment_method %}
+    <div class="page-header">
+        <h1>{% trans "Choose a way to pay" %}</h1>
+    </div>
+                
+	<form action="." method="post" class="form-stacked">
+    <div class="well">
+        <div class="row-fluid">
+            <div class="span6">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+
+                <div class="control-group">
+                    {{ form.options.errors }}
+                    <div class="controls">
+                        <label class="radio">
+                             <input type="radio" id="id_options_3" name="options" value="cash" checked="checked"/>
+                             {% trans "Will pay by cash on delivery" %}
+                        </label>
+                    </div>
+                </div>
+                             
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="radio">
+                             <input type="radio" id="id_options_2" name="options" value="bankcard" />
+                             {% trans "I have Visa or Mastercard etc" %}
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="radio">
+                             <input type="radio" id="id_options_1" name="options" value="invoice" />
+                             {% trans "Send me bank invoice, please" %}
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="radio">
+                             <input type="radio" id="id_options_0" name="options" value="paypal" />
+                             {% trans "Paypal is my choice" %}
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-large btn-primary pull-right">{% trans "Take my money!" %}</button>
+</form>
+
+
+{% endblock payment_method %}

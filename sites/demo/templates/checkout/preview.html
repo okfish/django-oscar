@@ -7,14 +7,23 @@
 <div class="span6">
     <h3>{% trans "Payment" %}</h3>
 	<div class="well well-success" data-behaviours="match-height">
-		<p>{% blocktrans with amount=order_total.incl_tax|currency %}{{ amount }} will be debited from your bankcard.{% endblocktrans %}</p>
+		<p>
+		{% if payment_method == "bankcard" %}
+			{% blocktrans with amount=order_total.incl_tax|currency %}{{ amount }} will be debited from your bankcard.{% endblocktrans %}
+		{% elif payment_method == "invoice" %}
+			{% blocktrans with amount=order_total.incl_tax|currency %}Bank invoice of {{ amount }} will be sent on your email.{% endblocktrans %}
+		{% elif payment_method == "cash" %}
+			{% blocktrans with amount=order_total.incl_tax|currency %}Please, prepare {{ amount }} for our courier.{% endblocktrans %}
+		{% elif payment_method == "paypal" %}
+			{% blocktrans with amount=order_total.incl_tax|currency %}{{ amount }} will be debited from your Paypal account.{% endblocktrans %}
+		{% endif %}
+		</p>
 		<div class="alert-actions">
-			<a href="{% url 'checkout:payment-details' %}" class="btn">{% trans "Change payment details" %}</a>
+			<a href="{% url 'checkout:payment-method' %}" class="btn">{% trans "Change payment details" %}</a>
 		</div>
 	</div>
 </div>
 {% endblock %}
-
 
 {% block place_order %}
 <hr/>
@@ -28,11 +37,13 @@
     template and render it in a hidden div.  Then the payment information will
     get re-submitted when the user confirms the order.
     {% endcomment %}
+    {% if payment_method == "bankcard" %}
     <div style="display:none">
         {% block hiddenforms %}
 		    {{ bankcard_form.as_p }}
 		{% endblock %}
     </div>
+    {% endif %}
 	<button id='place-order' type="submit" class="pull-right btn btn-primary btn-large js-disable-on-click" data-loading-text="{% trans 'Submitting...' %}">{% trans "Place order" %}</button>
 </form>
 {% endblock place_order %}
