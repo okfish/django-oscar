@@ -51,7 +51,8 @@ var oscar = (function(o, $) {
             // prevent multiple submissions
             $('form[data-behaviours~="lock"]').submit(o.forms.submitIfNotLocked);
 
-            // Disable buttons when they are clicked
+            // Disable buttons when they are clicked and show a "loading" message taken from the
+            // data-loading-text attribute (http://getbootstrap.com/2.3.2/javascript.html#buttons)
             $('.js-disable-on-click').click(function(){$(this).button('loading');});
         },
         submitIfNotLocked: function(event) {
@@ -168,11 +169,15 @@ var oscar = (function(o, $) {
             $('#messages').html('');
             var payload = $('#basket_formset').serializeArray();
             $.post(o.basket.url, payload, o.basket.submitFormSuccess, 'json');
-            event.preventDefault();
+            if (event) {
+                event.preventDefault();
+            }
         },
         submitFormSuccess: function(data) {
             $('#content_inner').html(data.content_html);
-            $('#messages').html('');
+
+            // Show any flash messages
+            o.messages.clear();
             for (var level in data.messages) {
                 for (var i=0; i<data.messages[level].length; i++) {
                     o.messages[level](data.messages[level][i]);
