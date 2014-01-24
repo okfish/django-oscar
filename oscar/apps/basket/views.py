@@ -1,4 +1,3 @@
-from urlparse import urlparse
 import json
 
 from django.contrib import messages
@@ -12,8 +11,9 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
 
 from extra_views import ModelFormSetView
+from oscar.core.compat import urlparse
 from oscar.core import ajax
-from oscar.apps.basket.signals import basket_addition, voucher_addition
+from oscar.apps.basket import signals
 from oscar.core.loading import get_class, get_classes
 Applicator = get_class('offer.utils', 'Applicator')
 (BasketLineFormSet, BasketLineForm, AddToBasketForm, BasketVoucherForm,
@@ -280,7 +280,7 @@ class BasketAddView(FormView):
     form_class = AddToBasketForm
     product_select_form_class = ProductSelectionForm
     product_model = get_model('catalogue', 'product')
-    add_signal = basket_addition
+    add_signal = signals.basket_addition
 
     def get(self, request, *args, **kwargs):
         return HttpResponseRedirect(reverse('basket:summary'))
@@ -305,7 +305,7 @@ class BasketAddView(FormView):
         if url:
             # We only allow internal URLs so we see if the url resolves
             try:
-                resolve(urlparse(url).path)
+                resolve(urlparse.urlparse(url).path)
             except Http404:
                 url = None
         if url is None:
@@ -349,7 +349,7 @@ class BasketAddView(FormView):
 class VoucherAddView(FormView):
     form_class = BasketVoucherForm
     voucher_model = get_model('voucher', 'voucher')
-    add_signal = voucher_addition
+    add_signal = signals.voucher_addition
 
     def get(self, request, *args, **kwargs):
         return HttpResponseRedirect(reverse('basket:summary'))
@@ -370,9 +370,8 @@ class VoucherAddView(FormView):
         self.request.basket.vouchers.add(voucher)
 
         # Raise signal
-        self.add_signal.send(sender=self,
-                             basket=self.request.basket,
-                             voucher=voucher)
+        self.add_signal.send(
+            sender=self, basket=self.request.basket, voucher=voucher)
 
         # Recalculate discounts to see if the voucher gives any
         Applicator().apply(self.request, self.request.basket)
@@ -426,16 +425,17 @@ class VoucherAddView(FormView):
 
 class VoucherRemoveView(View):
     voucher_model = get_model('voucher', 'voucher')
-
-    def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect(reverse('basket:summary'))
+    remove_signal = signals.voucher_removal
+    http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
-        voucher_id = int(kwargs.pop('pk'))
+        response = HttpResponseRedirect(reverse('basket:summary'))
+
+        voucher_id = kwargs['pk']
         if not request.basket.id:
             # Hacking attempt - the basket must be saved for it to have
             # a voucher in it.
-            return HttpResponseRedirect(reverse('basket:summary'))
+            return response
         try:
             voucher = request.basket.vouchers.get(id=voucher_id)
         except ObjectDoesNotExist:
@@ -443,10 +443,12 @@ class VoucherRemoveView(View):
                 request, _("No voucher found with id '%d'") % voucher_id)
         else:
             request.basket.vouchers.remove(voucher)
-            request.basket.save()
+            self.remove_signal.send(
+                sender=self, basket=request.basket, voucher=voucher)
             messages.info(
                 request, _("Voucher '%s' removed from basket") % voucher.code)
-        return HttpResponseRedirect(reverse('basket:summary'))
+
+        return response
 
 
 class SavedView(ModelFormSetView):

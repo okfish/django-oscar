@@ -10,6 +10,10 @@ upgrade:
 	python setup.py develop --upgrade
 
 sandbox: install
+	# Remove media
+	-rm -rf sites/sandbox/public/media/images
+	-rm -rf sites/sandbox/public/media/cache
+	-rm -rf sites/sandbox/public/static
 	-rm -f sites/sandbox/db.sqlite
 	# Create database
 	sites/sandbox/manage.py syncdb --noinput
@@ -105,3 +109,7 @@ clean:
 	# Remove files not in source control
 	find . -type f -name "*.pyc" -delete
 	rm -rf nosetests.xml coverage.xml htmlcov *.egg-info *.pdf dist violations.txt
+
+preflight: lint
+    # Bare minimum of tests to run before pushing to master
+	./runtests.py
