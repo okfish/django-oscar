@@ -1,12 +1,10 @@
 import string
-import urlparse
 import random
 
 from django import forms
 from django.conf import settings
 from django.contrib.auth import forms as auth_forms
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
 from django.core import validators
 from django.core.exceptions import ObjectDoesNotExist
@@ -17,6 +15,8 @@ from django.utils.translation import ugettext_lazy as _
 from oscar.core.loading import get_profile_class, get_class
 from oscar.core.compat import get_user_model
 from oscar.apps.customer.utils import get_password_reset_url, normalise_email
+from oscar.core.compat import urlparse
+
 
 Dispatcher = get_class('customer.utils', 'Dispatcher')
 CommunicationEventType = get_model('customer', 'communicationeventtype')
@@ -25,7 +25,12 @@ User = get_user_model()
 
 
 def generate_username():
-    uname = ''.join([random.choice(string.letters + string.digits + '_')
+    # Python 3 uses ascii_letters. If not available, fallback to letters
+    try:
+        letters = string.ascii_letters
+    except AttributeError:
+        letters = string.letters
+    uname = ''.join([random.choice(letters + string.digits + '_')
                      for i in range(30)])
     try:
         User.objects.get(username=uname)
