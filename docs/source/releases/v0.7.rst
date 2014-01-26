@@ -21,15 +21,27 @@ What's new in Oscar 0.7?
 Minor changes
 ~~~~~~~~~~~~~
 
+* Customers can delete their profiles from within the account section.
+
+* :attr:`~oscar.core.application.Application.permissions_map` now supports more than two
+  lists to evaluate permissions.
+
+* Formset handling in
+  :class:`~oscar.apps.dashboard.catalogue.views.ProductCreateUpdateView` has
+  been simplified and now easily allows adding further formsets.
+
+
 Backwards incompatible changes in 0.7
 =====================================
 
-* Order.basket_id was a PositiveIntegerField containing the primary key of the
-  associated basket. It's been refactored to be a nullable ForeignKeyField and
-  is now called basket.
+* ``Order.basket_id`` was a ``PositiveIntegerField`` containing the primary key of the
+  associated basket. It's been refactored to be a nullable ``ForeignKey`` and
+  is now called "basket".
 
 Removal of features deprecated in 0.6
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Django 1.4 support has been removed.
 
 Renamed templates
 ~~~~~~~~~~~~~~~~~
@@ -39,6 +51,8 @@ Template block changes
 
 Migrations
 ~~~~~~~~~~
+
+
 
 Features deprecated in 0.6
 ==========================

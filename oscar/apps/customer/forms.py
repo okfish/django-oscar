@@ -1,12 +1,10 @@
 import string
-import urlparse
 import random
 
 from django import forms
 from django.conf import settings
 from django.contrib.auth import forms as auth_forms
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
 from django.core import validators
 from django.core.exceptions import ObjectDoesNotExist
@@ -17,6 +15,8 @@ from django.utils.translation import ugettext_lazy as _
 from oscar.core.loading import get_profile_class, get_class
 from oscar.core.compat import get_user_model
 from oscar.apps.customer.utils import get_password_reset_url, normalise_email
+from oscar.core.compat import urlparse
+
 
 Dispatcher = get_class('customer.utils', 'Dispatcher')
 CommunicationEventType = get_model('customer', 'communicationeventtype')
@@ -25,7 +25,12 @@ User = get_user_model()
 
 
 def generate_username():
-    uname = ''.join([random.choice(string.letters + string.digits + '_')
+    # Python 3 uses ascii_letters. If not available, fallback to letters
+    try:
+        letters = string.ascii_letters
+    except AttributeError:
+        letters = string.letters
+    uname = ''.join([random.choice(letters + string.digits + '_')
                      for i in range(30)])
     try:
         User.objects.get(username=uname)
@@ -40,11 +45,8 @@ class PasswordResetForm(auth_forms.PasswordResetForm):
     """
     communication_type_code = "PASSWORD_RESET"
 
-    def save(self, domain_override=None,
-             subject_template_name='registration/password_reset_subject.txt',
-             email_template_name='registration/password_reset_email.html',
-             use_https=False, token_generator=default_token_generator,
-             from_email=None, request=None, **kwargs):
+    def save(self, domain_override=None, use_https=False, request=None,
+             **kwargs):
         """
         Generates a one-use only link for resetting password and sends to the
         user.
@@ -91,6 +93,26 @@ class EmailAuthenticationForm(AuthenticationForm):
         if host and host != self.host:
             return settings.LOGIN_REDIRECT_URL
         return url
+
+
+class ConfirmPasswordForm(forms.Form):
+    """
+    Extends the standard django AuthenticationForm, to support 75 character
+    usernames. 75 character usernames are needed to support the EmailOrUsername
+    auth backend.
+    """
+    password = forms.CharField(label=_("Password"), widget=forms.PasswordInput)
+
+    def __init__(self, user, *args, **kwargs):
+        super(ConfirmPasswordForm, self).__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_password(self):
+        password = self.cleaned_data['password']
+        if not self.user.check_password(password):
+            raise forms.ValidationError(
+                _("The entered password is not valid!"))
+        return password
 
 
 class CommonPasswordValidator(validators.BaseValidator):
