@@ -19,7 +19,7 @@ class ProductIndex(indexes.SearchIndex, indexes.Indexable):
 
     # Fields for faceting
     product_class = indexes.CharField(null=True, faceted=True)
-    category = indexes.CharField(null=True, faceted=True)
+    category = indexes.MultiValueField(null=True, faceted=True)
     price = indexes.DecimalField(null=True, faceted=True)
     num_in_stock = indexes.IntegerField(null=True, faceted=True)
     rating = indexes.IntegerField(null=True, faceted=True)
@@ -41,9 +41,7 @@ class ProductIndex(indexes.SearchIndex, indexes.Indexable):
         return obj.product_class.name
 
     def prepare_category(self, obj):
-        categories = obj.categories.all()
-        if len(categories) > 0:
-            return categories[0].full_name
+        return [category.full_name for category in obj.categories.all()]
 
     def prepare_rating(self, obj):
         if obj.rating is not None:

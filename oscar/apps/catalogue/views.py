@@ -6,8 +6,13 @@ from django.views.generic import ListView, DetailView
 from django.db.models import get_model
 from django.utils.translation import ugettext_lazy as _
 
+from haystack.query import SearchQuerySet
+
 from oscar.core.loading import get_class
 from oscar.apps.catalogue.signals import product_viewed, product_search
+from oscar.apps.catalogue.mixins import FacetedSearchMixin
+from oscar.apps.catalogue.forms import CategoryFacetForm
+from oscar.apps.search import facets
 
 Product = get_model('catalogue', 'product')
 ProductReview = get_model('reviews', 'ProductReview')
@@ -155,6 +160,51 @@ class ProductCategoryView(ListView):
         return Product.browsable.base_queryset().filter(
             categories__in=self.categories
         ).distinct()
+
+
+class ProductFacetedCategoryView(FacetedSearchMixin, ProductCategoryView):
+    template_name = 'catalogue/browse.html'
+    searchqueryset = None
+    form_class = CategoryFacetForm
+
+    def get(self, request, *args, **kwargs):
+        self.get_object()
+        self.get_searchqueryset()
+        correct_path = self.category.get_absolute_url()
+        if correct_path != request.path:
+            return HttpResponsePermanentRedirect(correct_path)
+        self.categories = self.get_categories()
+        return super(
+            ProductFacetedCategoryView, self).get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(
+            ProductFacetedCategoryView, self).get_context_data(**kwargs)
+        context['categories'] = self.categories
+        context['category'] = self.category
+        context['summary'] = self.category.name
+        if 'fields' in context['facets']:
+            # Convert facet data into a more useful datastructure
+            context['facet_data'] = facets.facet_data(
+                self.request, self.form, self.results)
+            has_facets = any([len(data['results']) for
+                              data in context['facet_data'].values()])
+            context['has_facets'] = has_facets
+        return context
+
+    def get_queryset(self):
+        self.form = self.build_form()
+        self.results = self.form.search()
+        return self.results
+
+    def get_searchqueryset(self):
+        sqs = SearchQuerySet().filter(category=self.category)
+        for facet in settings.OSCAR_SEARCH_FACETS['fields'].values():
+            sqs = sqs.facet(facet['field'])
+        for facet in settings.OSCAR_SEARCH_FACETS['queries'].values():
+            for query in facet['queries']:
+                sqs = sqs.query_facet(facet['field'], query[1])
+        self.searchqueryset = sqs
 
 
 class ProductListView(ListView):
