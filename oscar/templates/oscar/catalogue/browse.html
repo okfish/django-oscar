@@ -58,6 +58,16 @@
             </ul>
         </div>
     {% endif %}
+    {% if has_facets %}
+        <div class="facets">
+            <h4>{% trans "Refine your results" %}</h4>
+            {% for field, data in facet_data.items %}
+                {% if data.results and field != 'category' %}
+                    {% include 'search/partials/facet.html' with name=data.name items=data.results %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -76,6 +86,17 @@
                 <ol class="row-fluid">
                     {% for product in products %}
                         <li class="span3 {% if forloop.counter0|divisibleby:"4" %}no-margin{% endif %}">{% render_product product %}</li>
+                    {% endfor %}
+                </ol>
+                {% include "partials/pagination.html" %}
+            </div>
+        </section>
+    {% elif results %}
+        <section>
+            <div class="mod">
+                <ol class="row-fluid">
+                    {% for result in results %}
+                        <li class="span3 {% if forloop.counter0|divisibleby:"4" %}no-margin{% endif %}">{% render_product result.object %}</li>
                     {% endfor %}
                 </ol>
                 {% include "partials/pagination.html" %}
