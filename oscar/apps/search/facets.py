@@ -20,9 +20,16 @@ def facet_data(request, form, results):  # noqa (too complex (10))
             'name': facet['name'],
             'results': []}
         for name, count in facet_counts['fields'][key]:
-            # Ignore zero-count facets for field
-            if count == 0:
+            # Ignore zero-count facets for field with appropriate 
+            # settings show_zeros in OSCAR_SEARCH_FACETS
+            try: 
+                if count == 0 and not facet['show_zeros']:
+                    continue
+            except KeyError:
                 continue
+            else:
+                pass
+            
             field_filter = '%s_exact' % facet['field']
             datum = {
                 'name': name,
