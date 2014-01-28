@@ -347,6 +347,58 @@ GEOIP_PATH = os.path.join(os.path.dirname(__file__), 'geoip')
 #default currency for django-oscar-datacash
 DATACASH_CURRENCY = "GBP"
 
+# Search facets
+OSCAR_SEARCH_FACETS = {
+    'fields': {
+        # The key for these dicts will be used when passing facet data
+        # to the template. Same for the 'queries' dict below.
+        'category': {
+            'name': _('Category'),
+            'field': 'category'
+        },
+        'product_class': {
+            'name': _('Type'),
+            'field': 'product_class'
+        },
+        #'rating': {
+        #    'name': _('Rating'),
+        #    'field': 'rating'
+        #}
+        'size': {
+            'name': _('Size'),
+            'field': 'size'
+        },
+        'author': {
+            'name': _('Author'),
+            'field': 'author',
+            'show_zeros' : True, # Include field in the result even if count=0
+        },
+        'publisher': {
+            'name': _('Publisher'),
+            'field': 'publisher'
+        },
+        'binding': {
+            'name': _('Binding'),
+            'field': 'binding'
+        }, 
+    },
+    'queries': {
+        'price_range': {
+            'name': _('Price range'),
+            'field': 'price',
+            'queries': [
+                # This is a list of (name, query) tuples where the name will
+                # be displayed on the front-end.
+                (_('0 to 20'), '[0 TO 20]'),
+                (_('20 to 40'), '[20 TO 40]'),
+                (_('40 to 60'), '[40 TO 60]'),
+                (_('60+'), '[60 TO *]'),
+            ]
+        }
+    }
+}
+
+
 try:
     from settings_local import *
 except ImportError:
