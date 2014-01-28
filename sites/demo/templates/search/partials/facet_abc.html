@@ -1,0 +1,32 @@
+{% load i18n %}
+
+<!--Alphabetical view for field {{ name }}---->
+
+{% regroup items|dictsort:"name" by name.0 as items_by_letter %}
+<ul class="nav">
+	{% for letter_item in items_by_letter %}
+	<li class="dropdown">
+		<a tabindex="-1" href="#{{ letter_item.grouper }}" data-toggle="dropdown" class="dropdown-toggle"><b>{{ letter_item.grouper }}</b></a>
+		<ul class="dropdown-menu">
+		{% for item in letter_item.list %}
+			<li>
+			    {% with item_count=item.count %}
+			        {% if item.selected %}
+			            <strong>{{ item.name }}({{ item_count }})</strong>
+			            <small><a href="{{ item.deselect_url }}">[X]</a></small>
+			        {% else %}
+			                {% if item_count %}
+			                    <a href="{{ item.select_url }}">{{ item.name }}</a>({{ item_count }})
+			                {% else %}
+			                    {{ item.name }}(0)
+			                {% endif %}
+			        {% endif %}
+			    {% endwith %}
+			</li>
+		{% endfor %}
+		</ul>
+	</li>
+	{% endfor %}
+</ul> 
+<!--Alphabetical view for field {{ name }}---->  
+

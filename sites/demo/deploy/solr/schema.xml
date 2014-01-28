@@ -165,6 +165,10 @@
     <field name="num_in_stock_exact" type="long" indexed="true" stored="true" multiValued="false" />
     <field name="date_created" type="date" indexed="true" stored="true" multiValued="false" />
     <field name="rating_exact" type="long" indexed="true" stored="true" multiValued="false" />
+    <field name="size" type="text_en" indexed="true" stored="true" multiValued="true" />
+    <field name="size_exact" type="string" indexed="true" stored="true" multiValued="true" />
+    <field name="author" type="text_en" indexed="true" stored="true" multiValued="false" />
+    <field name="author_exact" type="string" indexed="true" stored="true" multiValued="false" />
 	<field name="_version_" type="long" indexed="true" stored="true"/>
   </fields>
 
