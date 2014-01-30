@@ -13,17 +13,19 @@ strategy = Selector().strategy()
 ProductAttributeValue = get_model('catalogue', 'ProductAttributeValue')
 ProductAttribute = get_model('catalogue', 'ProductAttribute')
 
-
-# Foreign keys for m2m relations of each attribute to extract values. Ugly but works :) 
-# Fill array with IDs of faceted attributes from ProductAttribute model depending
-# on settings 
-FACET_ATTR_IDS = {}
-
-for key, facet in OSCAR_SEARCH_FACETS['fields'].items():
-    try:
-        FACET_ATTR_IDS[facet['field']] = ProductAttribute.objects.get(code = facet['field']).id
-    except ProductAttribute.DoesNotExist: # If field is not attribute - pass it
-        pass    
+def get_facet_attrs():
+    """
+     Foreign keys for m2m relations of each attribute to extract values. Ugly but works :) 
+     Fill array with IDs of faceted attributes from ProductAttribute model depending
+     on settings
+    """  
+    result = {}
+    for key, facet in OSCAR_SEARCH_FACETS['fields'].items():
+        try:
+            result[facet['field']] = ProductAttribute.objects.get(code = facet['field']).id
+        except ProductAttribute.DoesNotExist: # If field is not attribute - pass it
+            pass  
+    return result   
 
 class ProductIndex(CoreProductIndex): 
     #Add Publisher and Binding attributes to index for faceting
@@ -60,13 +62,12 @@ class ProductIndex(CoreProductIndex):
             return self.get_attribute(obj, 'publisher')
 
     def get_attribute(self, obj, attr_name):
+        facet_attr_ids = get_facet_attrs
         value = None
         try:
-            value = obj.attribute_values.get(attribute=FACET_ATTR_IDS[attr_name]).value
+            value = obj.attribute_values.get(attribute=facet_attr_ids()[attr_name]).value
         except ProductAttributeValue.DoesNotExist:
             pass
         except KeyError:
-            raise ImproperlyConfigured(("Attribute field '%s' not defined in settings"
-                                        " or in database. Add attribute via admin UI"
-                                        "or define it in settings.OSCAR_SEARCH_FACETS.") % attr_name)
+            raise ImproperlyConfigured(("Attribute field '%s' defined in settings or in database") % attr_name)
         return value
