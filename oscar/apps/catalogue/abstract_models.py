@@ -174,17 +174,15 @@ class AbstractCategory(MP_Node):
 
 class AbstractProductCategory(models.Model):
     """
-    Joining model between products and categories.
+    Joining model between products and categories. Exists to allow customising.
     """
     product = models.ForeignKey('catalogue.Product', verbose_name=_("Product"))
     category = models.ForeignKey('catalogue.Category',
                                  verbose_name=_("Category"))
-    is_canonical = models.BooleanField(_('Is Cannonical'), default=False,
-                                       db_index=True)
 
     class Meta:
         abstract = True
-        ordering = ['-is_canonical']
+        ordering = ['product', 'category']
         verbose_name = _('Product Category')
         verbose_name_plural = _('Product Categories')
 
@@ -711,7 +709,8 @@ class AbstractProductAttribute(models.Model):
         _('Code'), max_length=128,
         validators=[RegexValidator(
             regex=r'^[a-zA-Z_][0-9a-zA-Z_]*$',
-            message=_("Code must match ^[a-zA-Z_][0-9a-zA-Z_]*$"))])
+            message=_("Code can only contain the letters a-z, A-Z, digits "
+                      "and underscores, and can't start with a digit"))])
 
     TYPE_CHOICES = (
         ("text", _("Text")),
