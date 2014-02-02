@@ -50,7 +50,7 @@ class ProductIndex(CoreProductIndex):
     
     def prepare_author(self, obj):
         if obj.is_group:
-             # Don't return a binding attr for group products
+             # Don't return a author attr for group products
              return None
         else:        
             return self.get_attribute(obj, 'author')
@@ -69,5 +69,5 @@ class ProductIndex(CoreProductIndex):
         except ProductAttributeValue.DoesNotExist:
             pass
         except KeyError:
-            raise ImproperlyConfigured(("Attribute field '%s' defined in settings or in database") % attr_name)
+            raise ImproperlyConfigured(("Attribute field '%s' doesn't defined in settings or in database") % attr_name)
         return value
