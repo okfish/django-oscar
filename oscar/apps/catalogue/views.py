@@ -200,7 +200,13 @@ class ProductFacetedCategoryView(FacetedSearchMixin, ProductCategoryView):
     def get_searchqueryset(self):
         sqs = SearchQuerySet().filter(category=self.category)
         for facet in settings.OSCAR_SEARCH_FACETS['fields'].values():
-            sqs = sqs.facet(facet['field'])
+            mincount = 0 # Defaults for
+            limit = 100  # Solr backend
+            try:
+                mincount, limit = facet['mincount'], facet['limit'] 
+            except KeyError:
+                pass
+            sqs = sqs.facet(facet['field'], mincount=mincount, limit=limit)
         for facet in settings.OSCAR_SEARCH_FACETS['queries'].values():
             for query in facet['queries']:
                 sqs = sqs.query_facet(facet['field'], query[1])

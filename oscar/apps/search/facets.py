@@ -24,7 +24,7 @@ def facet_data(request, form, results):  # noqa (too complex (10))
             # Ignore zero-count facets for field with appropriate 
             # settings show_zeros in OSCAR_SEARCH_FACETS
             try: 
-                if count == 0 and not facet['show_zeros']:
+                if count == 0 and not facet['mincount'] == 0:
                     continue
             except KeyError:
                 continue

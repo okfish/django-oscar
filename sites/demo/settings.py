@@ -371,7 +371,8 @@ OSCAR_SEARCH_FACETS = {
         'author': {
             'name': _('Author'),
             'field': 'author',
-            'show_zeros' : True, # Include field in the result even if count=0
+            'mincount' : 0, # Include field in the result even if count=0
+            'limit' : -1,   # Default for Solr is 100, surprise! Be careful if you use mincount=0
         },
         'publisher': {
             'name': _('Publisher'),
