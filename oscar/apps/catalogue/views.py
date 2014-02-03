@@ -254,15 +254,18 @@ class ProductFacetedListView(FacetedSearchMixin, ProductListView):
     def get_context_data(self, **kwargs):
         context = super(
             ProductFacetedListView, self).get_context_data(**kwargs)
-        #context['categories'] = self.categories
-        #context['category'] = self.category
-        #context['summary'] = self.category.name
+
+        context['summary'] = _('All products')
         if 'fields' in context['facets']:
+            
             # Convert facet data into a more useful datastructure
             context['facet_data'] = facets.facet_data(
                 self.request, self.form, self.results)
             has_facets = any([len(data['results']) for
                               data in context['facet_data'].values()])
+            has_selected = self.request.GET.get('selected_facets', None)
+            if has_selected:
+                context['summary'] = _("Products matching your selection")
             context['has_facets'] = has_facets
         return context
 
