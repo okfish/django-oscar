@@ -16,9 +16,10 @@
 			            <small><a href="{{ item.deselect_url }}">[X]</a></small>
 			        {% else %}
 			                {% if item_count %}
-			                    <a href="{{ item.select_url }}">{{ item.name }}</a>({{ item_count }})
+			                    {{ item.name }}<small>(<a href="{{ item.select_url }}">{{ item_count }}</a>)</small>
+			                    	<strong><a title="Browse all" href="{{ item.select_all_url }}">&raquo;</a></strong>
 			                {% else %}
-			                    {{ item.name }}(0)
+			                    <a href="{{ item.select_all_url }}">{{ item.name }}</a>
 			                {% endif %}
 			        {% endif %}
 			    {% endwith %}
