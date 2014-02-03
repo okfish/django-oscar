@@ -199,18 +199,7 @@ class ProductFacetedCategoryView(FacetedSearchMixin, ProductCategoryView):
 
     def get_searchqueryset(self):
         sqs = SearchQuerySet().filter(category=self.category)
-        for facet in settings.OSCAR_SEARCH_FACETS['fields'].values():
-            mincount = 0 # Defaults for
-            limit = 100  # Solr backend
-            try:
-                mincount, limit = facet['mincount'], facet['limit'] 
-            except KeyError:
-                pass
-            sqs = sqs.facet(facet['field'], mincount=mincount, limit=limit)
-        for facet in settings.OSCAR_SEARCH_FACETS['queries'].values():
-            for query in facet['queries']:
-                sqs = sqs.query_facet(facet['field'], query[1])
-        self.searchqueryset = sqs
+        self.searchqueryset = facets.append_to_sqs(sqs)
 
 
 class ProductListView(ListView):
@@ -248,3 +237,41 @@ class ProductListView(ListView):
                 % {'query': q}
             context['search_term'] = q
         return context
+
+class ProductFacetedListView(FacetedSearchMixin, ProductListView):
+    """
+    A list of products with facets. Based on @laidibug commits
+    """
+    template_name = 'catalogue/browse.html'
+    searchqueryset = None
+    form_class = CategoryFacetForm
+
+    def get(self, request, *args, **kwargs):
+        self.get_searchqueryset()
+        return super(
+            ProductFacetedListView, self).get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(
+            ProductFacetedListView, self).get_context_data(**kwargs)
+        #context['categories'] = self.categories
+        #context['category'] = self.category
+        #context['summary'] = self.category.name
+        if 'fields' in context['facets']:
+            # Convert facet data into a more useful datastructure
+            context['facet_data'] = facets.facet_data(
+                self.request, self.form, self.results)
+            has_facets = any([len(data['results']) for
+                              data in context['facet_data'].values()])
+            context['has_facets'] = has_facets
+        return context
+
+    def get_queryset(self):
+        self.form = self.build_form()
+        self.results = self.form.search()
+        return self.results
+
+    def get_searchqueryset(self):
+        sqs = SearchQuerySet().all()
+        self.searchqueryset = facets.append_to_sqs(sqs)
+
