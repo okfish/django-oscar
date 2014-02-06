@@ -15,7 +15,7 @@ def facet_data(request, form, results):  # noqa (too complex (10))
     # URL for 'global' facet selection, e.g. filter for brands over all products 
     base_all_url = URL(reverse_lazy('catalogue:index').decode()) 
     facet_counts = results.facet_counts()
-
+    stats_results = results.stats_results()
     # Field facets
     valid_facets = [f for f in form.selected_facets if ':' in f]
     selected = dict(
@@ -26,14 +26,9 @@ def facet_data(request, form, results):  # noqa (too complex (10))
             'results': []}
         for name, count in facet_counts['fields'][key]:
             # Ignore zero-count facets for field with appropriate 
-            # settings show_zeros in OSCAR_SEARCH_FACETS
-            try: 
-                if count == 0 and not facet['mincount'] == 0:
-                    continue
-            except KeyError:
+            # settings 'mincount' in OSCAR_SEARCH_FACETS
+            if count == 0 and not facet.get('mincount', 0):
                 continue
-            else:
-                pass
             
             field_filter = '%s_exact' % facet['field']
             datum = {
@@ -71,19 +66,28 @@ def facet_data(request, form, results):  # noqa (too complex (10))
         facet_data[key] = {
             'name': facet['name'],
             'results': []}
+            
+        
+        
         for name, query in facet['queries']:
+            datum = {
+                    'name': name,
+            }
             field_filter = '%s_exact' % facet['field']
+            # 'dynamic' field handling for templates
+            # get query from request if given
+            if facet.get('type', None) == 'dynamic' and selected.get(field_filter, None):
+                query = selected.get(field_filter, None)
+                 
             match = '%s_exact:%s' % (facet['field'], query)
             if match not in facet_counts['queries']:
-                datum = {
-                    'name': name,
-                    'count': 0,
-                }
+                datum['count'] = 0
             else:
-                datum = {
-                    'name': name,
-                    'count': facet_counts['queries'][match],
-                }
+                datum['count'] = facet_counts['queries'][match]
+                #datum['stats'] = stats_results
+                # Try to get field stats
+                datum['stats'] = stats_results.get(facet['field'], None)
+                
                 if selected.get(field_filter, None) == query:
                     # Selected
                     datum['selected'] = True
@@ -99,20 +103,40 @@ def facet_data(request, form, results):  # noqa (too complex (10))
 
     return facet_data
 
-def append_to_sqs(sqs):
+def append_to_sqs(sqs, form=None):
     """
     Takes facet fields and queries from settings.OSCAR_SEARCH_FACETS 
     and appends to SearchQuerySet 
     """
+    kwargs = {}
     for facet in settings.OSCAR_SEARCH_FACETS['fields'].values():
-        mincount = 0 # Defaults for
-        limit = 100  # Solr backend
-        try:
-            mincount, limit = facet['mincount'], facet['limit'] 
-        except KeyError:
-            pass
-        sqs = sqs.facet(facet['field'], mincount=mincount, limit=limit)
+        mincount, limit = facet.get('mincount', None), facet.get('limit', None)
+        if mincount:
+            kwargs['mincount'] = mincount
+        if limit:
+            kwargs['limit'] = limit                  
+        sqs = sqs.facet(facet['field'], **kwargs)
     for facet in settings.OSCAR_SEARCH_FACETS['queries'].values():
-        for query in facet['queries']:
-            sqs = sqs.query_facet(facet['field'], query[1])
+        query_type = facet.get('type', None)
+        if query_type == 'dynamic':
+            # If query has 'dynamic' type - check request vars for selected facet
+            # if no request given use default value from settings
+            # Also add stats query for that fields, e.g. to select min and max values
+            field_filter = '%s_exact' % facet['field']
+            query = facet['queries'][0][1] # The only default query allowed for 'dynamic' fields
+            if form.selected_facets:
+                for selected_facet in form.selected_facets:
+                    if ":" not in selected_facet:
+                        continue
+                    field, value = selected_facet.split(":", 1)
+                    if field == field_filter:
+                        query = value
+                    sqs = sqs.query_facet(facet['field'], query)
+            else:
+                sqs = sqs.query_facet(facet['field'], query)       
+            sqs = sqs.stats(facet['field']) 
+                
+        else:        
+            for query in facet['queries']:
+                sqs = sqs.query_facet(facet['field'], query[1])
     return sqs

@@ -269,12 +269,13 @@ class ProductFacetedListView(FacetedSearchMixin, ProductListView):
             context['has_facets'] = has_facets
         return context
 
-    def get_queryset(self):
-        self.form = self.build_form()
-        self.results = self.form.search()
-        return self.results
+#     def get_queryset(self):
+#         self.form = self.build_form()
+#         self.results = self.form.search()
+#         return self.results
 
     def get_searchqueryset(self):
+        self.form = self.build_form()
         sqs = SearchQuerySet().all()
-        self.searchqueryset = facets.append_to_sqs(sqs)
+        self.searchqueryset = facets.append_to_sqs(sqs, self.form)
 

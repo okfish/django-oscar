@@ -6,10 +6,10 @@
     {% with item_count=item.count %}
         {% if item.selected %}
             <strong>{{ item.name }} ({{ item_count }})</strong>
-            <small><a href="{{ item.deselect_url }}">{% trans "Remove" %}</a></small>
+            <small><a itle="From {{ item.stats.min }} to {{ item.stats.max }}" href="{{ item.deselect_url }}">{% trans "Remove" %}</a></small>
         {% else %}
                 {% if item_count %}
-                    <a href="{{ item.select_url }}">{{ item.name }}</a> ({{ item_count }})
+                    <a title="From {{ item.stats.min }} to {{ item.stats.max }}" href="{{ item.select_url }}">{{ item.name }}</a> ({{ item_count }})
                 {% else %}
                     {{ item.name }} (0)
                 {% endif %}
