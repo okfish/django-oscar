@@ -27,7 +27,7 @@ def facet_data(request, form, results):  # noqa (too complex (10))
         for name, count in facet_counts['fields'][key]:
             # Ignore zero-count facets for field with appropriate 
             # settings 'mincount' in OSCAR_SEARCH_FACETS
-            if count == 0 and not facet.get('mincount', 0):
+            if count == 0 and facet.get('mincount', 'not-set') == 'not-set' :
                 continue
             
             field_filter = '%s_exact' % facet['field']
@@ -110,8 +110,8 @@ def append_to_sqs(sqs, form=None):
     """
     kwargs = {}
     for facet in settings.OSCAR_SEARCH_FACETS['fields'].values():
-        mincount, limit = facet.get('mincount', None), facet.get('limit', None)
-        if mincount:
+        mincount, limit = facet.get('mincount', 'not-set'), facet.get('limit', None)
+        if not mincount == 'not-set':
             kwargs['mincount'] = mincount
         if limit:
             kwargs['limit'] = limit                  

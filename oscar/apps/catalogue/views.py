@@ -198,8 +198,9 @@ class ProductFacetedCategoryView(FacetedSearchMixin, ProductCategoryView):
         return self.results
 
     def get_searchqueryset(self):
+        self.form = self.build_form()
         sqs = SearchQuerySet().filter(category=self.category)
-        self.searchqueryset = facets.append_to_sqs(sqs)
+        self.searchqueryset = facets.append_to_sqs(sqs, self.form)
 
 
 class ProductListView(ListView):
