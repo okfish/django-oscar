@@ -66,9 +66,7 @@ def facet_data(request, form, results):  # noqa (too complex (10))
         facet_data[key] = {
             'name': facet['name'],
             'results': []}
-            
-        
-        
+       
         for name, query in facet['queries']:
             datum = {
                     'name': name,
@@ -78,7 +76,6 @@ def facet_data(request, form, results):  # noqa (too complex (10))
             # get query from request if given
             if facet.get('type', None) == 'dynamic' and selected.get(field_filter, None):
                 query = selected.get(field_filter, None)
-                 
             match = '%s_exact:%s' % (facet['field'], query)
             if match not in facet_counts['queries']:
                 datum['count'] = 0
@@ -110,20 +107,26 @@ def append_to_sqs(sqs, form=None):
     """
     kwargs = {}
     for facet in settings.OSCAR_SEARCH_FACETS['fields'].values():
-        mincount, limit = facet.get('mincount', 'not-set'), facet.get('limit', None)
+        mincount = facet.get('mincount', 'not-set') 
+        limit =  facet.get('limit', None)
+        stats = facet.get('stats', False)
         if not mincount == 'not-set':
             kwargs['mincount'] = mincount
         if limit:
             kwargs['limit'] = limit                  
         sqs = sqs.facet(facet['field'], **kwargs)
+        if stats:
+            sqs = sqs.stats(facet['field'])
     for facet in settings.OSCAR_SEARCH_FACETS['queries'].values():
         query_type = facet.get('type', None)
+        query_stats = facet.get('stats', False)
         if query_type == 'dynamic':
             # If query has 'dynamic' type - check request vars for selected facet
             # if no request given use default value from settings
-            # Also add stats query for that fields, e.g. to select min and max values
+            
             field_filter = '%s_exact' % facet['field']
-            query = facet['queries'][0][1] # The only default query allowed for 'dynamic' fields
+            # The only default query allowed for 'dynamic' fields
+            query = facet['queries'][0][1] 
             if form.selected_facets:
                 for selected_facet in form.selected_facets:
                     if ":" not in selected_facet:
@@ -134,9 +137,11 @@ def append_to_sqs(sqs, form=None):
                     sqs = sqs.query_facet(facet['field'], query)
             else:
                 sqs = sqs.query_facet(facet['field'], query)       
-            sqs = sqs.stats(facet['field']) 
-                
         else:        
             for query in facet['queries']:
                 sqs = sqs.query_facet(facet['field'], query[1])
+        # Collect stats query for fields with appropriate settings, 
+        # e.g. to select min and max values        
+        if query_stats:
+            sqs = sqs.stats(facet['field'])
     return sqs
