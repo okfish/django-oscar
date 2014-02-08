@@ -372,20 +372,28 @@ OSCAR_SEARCH_FACETS = {
             'name': _('Author'),
             'field': 'author',
             'mincount' : 0, # Include field in the result even if count=0
-            'limit' : -1,   # Default for Solr is 100, surprise! Be careful if you use mincount=0
+            'limit' : -1, # Default for Solr is 100, surprise! Be careful if you use mincount=0
+            # First attempt to make facet templating nore customisable
+            # widget class responsible for facet rendering
+            'widget' : 'search.widgets.AlphabetList',  
         },
         'publisher': {
             'name': _('Publisher'),
-            'field': 'publisher'
+            'field': 'publisher',
+            'widget' : 'search.widgets.SimpleLink',
+            # Statistics on text fields doesn't supported by Solr at this moment  
+            # Only numeric and multivalued fields
+            # 'stats': True,
         },
         'binding': {
             'name': _('Binding'),
-            'field': 'binding'
+            'field': 'binding',
+            'mincount' : 0,
         }, 
     },
     'queries': {
-        'price_range': {
-            'name': _('Price range'),
+        'price_ranges': {
+            'name': _('Price ranges'),
             'field': 'price',
             'queries': [
                 # This is a list of (name, query) tuples where the name will
@@ -395,10 +403,22 @@ OSCAR_SEARCH_FACETS = {
                 (_('40 to 60'), '[40 TO 60]'),
                 (_('60+'), '[60 TO *]'),
             ]
-        }
+        },
+        'price_range': {
+            'name': _('Price range'),
+            'field': 'price',
+            'queries': [
+                (_('Price slider label'),'[* TO *]')
+            ],
+            # Trying to implement range slider
+            # For 'dynamic' fields facet counts retrived by query constructed in UI 
+            'type': 'dynamic',
+            # Use this option to collect statistic data on the 'field'
+            'stats': True,
+            #'widget' : 'search.widgets.RangeSlider',   
+        },
     }
 }
-
 
 try:
     from settings_local import *
