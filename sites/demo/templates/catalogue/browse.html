@@ -5,6 +5,7 @@
 {% load promotion_tags %}
 {% load product_tags %}
 {% load category_tags %}
+{% load search_tags %}
 {% load i18n %}
 
 {% block navigation %}
@@ -13,13 +14,15 @@
 <div class="nav-alphabet nav-collapse navbar">
 	<div class="container-fluid">
 		{% if has_facets %}
-			{% if facet_data.author %}
-				{% include 'search/partials/facet_abc.html' with name=facet_data.author.name items=facet_data.author.results %}
-			{% else %}
-				{% trans "no authors found" %}
-			{% endif %}
+			{% for field, data in facet_data.items %}
+            	
+                {% if data.results and field == 'author' %}
+                	{% render_facet field data %}
+                    
+                {% endif %}
+            {% endfor %}
 		{% else %}
-			{% trans "no facets set" %} 
+			[no facets set] 
 		{% endif %}	
 	</div>
 </div>
@@ -73,8 +76,10 @@
         <div class="facets">
             <h4>{% trans "Refine your results" %}</h4>
             {% for field, data in facet_data.items %}
+            	
                 {% if data.results and field != 'category' and field != 'author' %}
-                    {% include 'search/partials/facet.html' with name=data.name items=data.results %}
+                	{% render_facet field data %}
+                    
                 {% endif %}
             {% endfor %}
         </div>
