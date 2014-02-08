@@ -7,13 +7,13 @@ from settings import OSCAR_SEARCH_FACETS
 
 register = template.Library()
 
-DEFAULT_FACET_TEMPLATE = 'search/partials/facet.html'
+DEFAULT_FACET_WIDGET = 'search.widgets.SimpleLink'
 
 @register.tag
 def render_facet(parser, token):
     """
-    Render facet field using widget class defined in settings
-    
+    Renders facet field using widget class defined in settings
+    Takes two args: field name and field data
     """
     args = token.split_contents()
     if len(args) < 3:
@@ -24,7 +24,7 @@ def render_facet(parser, token):
 
 class FacetFieldNode(template.Node):
     """
-    Render facet field defined in settings using widget class. 
+    Renders facet field defined in settings using widget class. 
     If no widget found use default template.
     """
     def __init__(self, field, data):
@@ -37,23 +37,19 @@ class FacetFieldNode(template.Node):
         #search_form = self.form.resolve(context)
         
         FacetWidgetClass = get_widget_class(field)
+        # Widget class should be retrived anyway but
+        # if not - silently die
         
         if FacetWidgetClass:
-            widget = FacetWidgetClass(field, data)
-            return widget.render()
-        else: #  No widget class found - render default template
-            return  render_to_string(DEFAULT_FACET_TEMPLATE, 
-                                    {'name' : data['name'], 
-                                     'items' : data['results'],
-                                     #'form_keys' : search_form.hidden_fields(),
-                                     }, 
-                                    context
-                                    )
+            return FacetWidgetClass(field, data).render()
+        else:
+            return '' 
             
 def get_widget_class(field):
+    widget_module, widget_class = DEFAULT_FACET_WIDGET.rsplit('.',1)
     for facets in OSCAR_SEARCH_FACETS.values():
         for key, facet in facets.items():
-            if key == field and facet.get('widget'):
-                widget_module, widget_class = facet['widget'].rsplit('.',1)
+            if key == field:
+                if facet.get('widget'):
+                    widget_module, widget_class = facet['widget'].rsplit('.',1)
                 return get_class(widget_module, widget_class)
-    
