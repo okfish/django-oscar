@@ -43,7 +43,7 @@ class FacetFieldNode(template.Node):
         if FacetWidgetClass:
             return FacetWidgetClass(field, data).render()
         else:
-            return '' 
+            return '[no widget class loaded]' 
             
 def get_widget_class(field):
     widget_module, widget_class = DEFAULT_FACET_WIDGET.rsplit('.',1)

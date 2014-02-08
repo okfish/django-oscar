@@ -408,14 +408,14 @@ OSCAR_SEARCH_FACETS = {
             'name': _('Price range'),
             'field': 'price',
             'queries': [
-                (_('Price slider label'),'[* TO *]')
+                (_('Price range'),'[* TO *]')
             ],
             # Trying to implement range slider
             # For 'dynamic' fields facet counts retrived by query constructed in UI 
             'type': 'dynamic',
             # Use this option to collect statistic data on the 'field'
             'stats': True,
-            #'widget' : 'search.widgets.RangeSlider',   
+            'widget' : 'search.widgets.SimpleRangeInput',   
         },
     }
 }

@@ -1,0 +1,26 @@
+{% load i18n %}
+
+<!--Range view form for field {{ name }}---->
+
+<div class="input-range">
+	{% for item in items %}
+		<div>
+			{% with item_count=item.count %}
+				{% if item_count %}
+					<form action="{{ item.deselect_url }}" id="{{ field }}_form">
+				    	<strong>{{ item.name }}</strong>({{ item_count }})
+				    	<label><small>{% trans "from" %}</small></label>
+				    	<input type="text" maxlength="7" max = "{{ item.stats.max }}" min = "{{ item.stats.min }}" value="{{ item.stats.min }}" id="{{ field }}_start" name="{{ field }}_start"/>
+				    	<label><small>{% trans "to" %}</small></label>
+				    	<input type="text" maxlength="7" max = "{{ item.stats.max }}" value="{{ item.stats.max }}" id="{{ field }}_stop" name="{{ field }}_stop"/>
+				    	<input type="submit">
+				    	<strong>[<a title="Show all" href="{{ item.deselect_url }}">X</a></strong>]
+			    	</form>
+			     {% endif %}	
+			{% endwith %}
+		</div>
+		
+	{% endfor %}
+</div>
+
+<!--Range view form for field {{ name }}---->  

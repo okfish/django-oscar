@@ -50,6 +50,10 @@ def facet_data(request, form, results):  # noqa (too complex (10))
                 if count > 0:
                     url = base_url.append_query_param('selected_facets', 
                                                       '%s:%s' % (field_filter, name))
+                else: 
+                    # count=0 : but settings allows to show all facets
+                    # build url as for 
+                    url = base_url
                 # Don't carry through pagination params
                 if url.has_query_param('page'):
                     url = url.remove_query_param('page')
@@ -72,10 +76,13 @@ def facet_data(request, form, results):  # noqa (too complex (10))
                     'name': name,
             }
             field_filter = '%s_exact' % facet['field']
+            default_query = query
+            selected_query = selected.get(field_filter, None)
+            query_type = facet.get('type', None)
             # 'dynamic' field handling for templates
             # get query from request if given
-            if facet.get('type', None) == 'dynamic' and selected.get(field_filter, None):
-                query = selected.get(field_filter, None)
+            if query_type == 'dynamic' and selected_query:
+                query = selected_query
             match = '%s_exact:%s' % (facet['field'], query)
             if match not in facet_counts['queries']:
                 datum['count'] = 0
@@ -85,14 +92,19 @@ def facet_data(request, form, results):  # noqa (too complex (10))
                 # Try to get field stats
                 datum['stats'] = stats_results.get(facet['field'], None)
                 
-                if selected.get(field_filter, None) == query:
+                if selected_query == query:
                     # Selected
                     datum['selected'] = True
                     url = base_url.remove_query_param(
                         'selected_facets', match)
                     datum['deselect_url'] = url.as_string()
+                elif query == default_query and query_type == 'dynamic':
+                    datum['selected'] = True
+                    url = base_url
+                    datum['deselect_url'] = url.as_string()
                 else:
                     datum['selected'] = False
+                    # If default query given we have facet marked as not selected  
                     url = base_url.append_query_param(
                         'selected_facets', match)
                     datum['select_url'] = url.as_string()
@@ -126,6 +138,7 @@ def append_to_sqs(sqs, form=None):
             
             field_filter = '%s_exact' % facet['field']
             # The only default query allowed for 'dynamic' fields
+            # If no default query given do not append 
             query = facet['queries'][0][1] 
             if form.selected_facets:
                 for selected_facet in form.selected_facets:

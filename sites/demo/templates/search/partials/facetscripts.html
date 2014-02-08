@@ -1,0 +1,22 @@
+<script type="text/javascript">
+(function(o, $) {
+				$('#{{ field }}_form').submit(function(e){
+                        var start = $('#{{ field }}_start').val();
+                        $('#{{ field }}_start').attr("disabled", "disabled");
+                        var stop = $('#{{ field }}_stop').val();
+                        $('#{{ field }}_stop').attr("disabled", "disabled");
+                        //$('#{{ field }}_selected_facets').val('{{ search_field }}_exact:['+start+' TO '+stop+']');
+                        action_url=$('#{{ field }}_form').attr('action');
+                        loc = window.location;
+                        range_field = 'selected_facets={{ search_field }}_exact:['+start+' TO '+stop+']';
+                        if (action_url.split('?').length > 1) {
+                          	loc.search = action_url.split('?')[1] + '&' + range_field;
+                        }else{
+                        	loc.search = '?' + range_field;
+                        };
+
+              			e.preventDefault();
+    					return false;
+                      });
+})(oscar || {}, jQuery);
+</script> 

@@ -1,5 +1,6 @@
 {% extends "oscar/catalogue/browse.html" %}
 
+{% load compress %}
 {% load currency_filters %}
 {% load basket_tags %}
 {% load promotion_tags %}
@@ -115,3 +116,12 @@
     {% endif %}
 
 {% endblock content %}
+
+{% block extrascripts %}
+{% compress js %}
+	{{ block.super }}
+	{% if has_facets %}
+		{% include "search/partials/facetscripts.html" with field='price_range' search_field='price' %}
+    {% endif %}
+{% endcompress %}
+{% endblock %}
