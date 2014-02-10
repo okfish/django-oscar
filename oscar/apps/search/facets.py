@@ -11,6 +11,9 @@ def facet_data(request, form, results):  # noqa (too complex (10))
     templates can use without having to manually construct URLs
     """
     facet_data = {}
+    if not results:
+        return facet_data
+
     base_url = URL(request.get_full_path())
     # URL for 'global' facet selection, e.g. filter for brands over all products 
     base_all_url = URL(reverse_lazy('catalogue:index').decode()) 
