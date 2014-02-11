@@ -145,25 +145,19 @@
     <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
     <dynamicField name="*_coordinate"  type="tdouble" indexed="true"  stored="false"/>
 
-<<<<<<< HEAD
-
-    <field name="rating" type="long" indexed="true" stored="true" multiValued="false" />
-=======
     <field name="category" type="text_en" indexed="true" stored="true" multiValued="true" />
     <field name="rating" type="long" indexed="true" stored="true" multiValued="false" />
     <field name="rating_exact" type="long" indexed="true" stored="true" multiValued="false" />
     <field name="category_exact" type="string" indexed="true" stored="true" multiValued="true" />
->>>>>>> d9dd09c7a7d0fbc92f314a597cff1e347f49b2ca
     <field name="product_class" type="text_en" indexed="true" stored="true" multiValued="false" />
     <field name="date_updated" type="date" indexed="true" stored="true" multiValued="false" />
     <field name="text" type="edge_ngram" indexed="true" stored="true" multiValued="false" />
+    <field name="suggestions" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="price" type="tdouble" indexed="true" stored="true" multiValued="false" />
     <field name="price_exact" type="tdouble" indexed="true" stored="true" multiValued="false" />
     <field name="num_in_stock" type="long" indexed="true" stored="true" multiValued="false" />
     <field name="publisher_exact" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="product_class_exact" type="string" indexed="true" stored="true" multiValued="false" />
-    <field name="category" type="text_en" indexed="true" stored="true" multiValued="true" />
-    <field name="category_exact" type="string" indexed="true" stored="true" multiValued="true" />
     <field name="title" type="edge_ngram" indexed="true" stored="true" multiValued="false" />
     <field name="publisher" type="text_en" indexed="true" stored="true" multiValued="false" />
     <field name="binding" type="text_en" indexed="true" stored="true" multiValued="false" />
@@ -171,7 +165,6 @@
     <field name="upc" type="text_en" indexed="true" stored="true" multiValued="false" />
     <field name="num_in_stock_exact" type="long" indexed="true" stored="true" multiValued="false" />
     <field name="date_created" type="date" indexed="true" stored="true" multiValued="false" />
-    <field name="rating_exact" type="long" indexed="true" stored="true" multiValued="false" />
     <field name="size" type="text_en" indexed="true" stored="true" multiValued="true" />
     <field name="size_exact" type="string" indexed="true" stored="true" multiValued="true" />
     <field name="author" type="text_en" indexed="true" stored="true" multiValued="false" />
