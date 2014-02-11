@@ -1,4 +1,4 @@
-from django.db.models import get_model
+from oscar.core.loading import get_model
 from haystack import views
 
 from . import facets
@@ -27,7 +27,7 @@ class FacetedSearchView(views.FacetedSearchView):
         extra = super(FacetedSearchView, self).extra_context()
 
         # Show suggestion no matter what.  Haystack 2.1 only shows a suggestion
-        # if there are some results, which seems a bit weird to me
+        # if there are some results, which seems a bit weird to me.
         if self.results.query.backend.include_spelling:
             suggestion = self.form.get_suggestion()
             if suggestion != self.query:
@@ -41,4 +41,13 @@ class FacetedSearchView(views.FacetedSearchView):
                               data in extra['facet_data'].values()])
             extra['has_facets'] = has_facets
 
+        # Pass list of selected facets so they can be included in the sorting
+        # form.
+        extra['selected_facets'] = self.request.GET.getlist('selected_facets')
+
         return extra
+
+    def get_results(self):
+        # We're only interested in products (there might be other content types
+        # in the Solr index).
+        return super(FacetedSearchView, self).get_results().models(Product)

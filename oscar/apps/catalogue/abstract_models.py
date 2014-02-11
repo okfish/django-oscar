@@ -13,13 +13,13 @@ from django.core.exceptions import ValidationError, ImproperlyConfigured
 from django.core.files.base import File
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Sum, Count, get_model
+from django.db.models import Sum, Count
 from django.utils.translation import ugettext_lazy as _
 from django.utils.functional import cached_property
 from treebeard.mp_tree import MP_Node
 
 from oscar.core.utils import slugify
-from oscar.core.loading import get_classes
+from oscar.core.loading import get_classes, get_model
 
 ProductManager, BrowsableProductManager = get_classes(
     'catalogue.managers', ['ProductManager', 'BrowsableProductManager'])
@@ -174,17 +174,15 @@ class AbstractCategory(MP_Node):
 
 class AbstractProductCategory(models.Model):
     """
-    Joining model between products and categories.
+    Joining model between products and categories. Exists to allow customising.
     """
     product = models.ForeignKey('catalogue.Product', verbose_name=_("Product"))
     category = models.ForeignKey('catalogue.Category',
                                  verbose_name=_("Category"))
-    is_canonical = models.BooleanField(_('Is Cannonical'), default=False,
-                                       db_index=True)
 
     class Meta:
         abstract = True
-        ordering = ['-is_canonical']
+        ordering = ['product', 'category']
         verbose_name = _('Product Category')
         verbose_name_plural = _('Product Categories')
 
@@ -286,8 +284,9 @@ class AbstractProduct(models.Model):
     slug = models.SlugField(_('Slug'), max_length=255, unique=False)
     description = models.TextField(_('Description'), blank=True, null=True)
 
-    #: Use this field to indicate if the product is inactive or awaiting
-    #: approval
+    #: Status field which is not used by core Oscar. Added because it's
+    # commonly needed to e.g. indicate if the product is inactive or awaiting
+    #: approval.
     status = models.CharField(_('Status'), max_length=128, blank=True,
                               null=True, db_index=True)
     product_class = models.ForeignKey(
@@ -320,6 +319,7 @@ class AbstractProduct(models.Model):
 
     # Product score - used by analytics app
     score = models.FloatField(_('Score'), default=0.00, db_index=True)
+
     # Denormalised product rating - used by reviews app.
     # Product has no ratings if rating is None
     rating = models.FloatField(_('Rating'), null=True, editable=False)
@@ -338,7 +338,7 @@ class AbstractProduct(models.Model):
     #: discount some types of product (e.g. ebooks) and this field helps
     #: merchants from avoiding discounting such products
     is_discountable = models.BooleanField(
-        _("Is discountable?"), default=True, help_text=(
+        _("Is discountable?"), default=True, help_text=_(
             "This flag indicates if this product can be used in an offer "
             "or not"))
 
@@ -711,7 +711,8 @@ class AbstractProductAttribute(models.Model):
         _('Code'), max_length=128,
         validators=[RegexValidator(
             regex=r'^[a-zA-Z_][0-9a-zA-Z_]*$',
-            message=_("Code must match ^[a-zA-Z_][0-9a-zA-Z_]*$"))])
+            message=_("Code can only contain the letters a-z, A-Z, digits "
+                      "and underscores, and can't start with a digit"))])
 
     TYPE_CHOICES = (
         ("text", _("Text")),

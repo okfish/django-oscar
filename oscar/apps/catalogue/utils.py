@@ -8,7 +8,7 @@ from PIL import Image
 
 from django.core.files import File
 from django.core.exceptions import FieldError
-from django.db.models import get_model
+from oscar.core.loading import get_model
 from django.db.transaction import commit_on_success
 from django.utils.translation import ugettext_lazy as _
 
@@ -57,14 +57,13 @@ class Importer(object):
                                         % (self._field, lookup_value))
                     stats['num_skipped'] += 1
                 except IOError as e:
+                    stats['num_invalid'] += 1
                     raise ImageImportError(_('%(filename)s is not a valid'
                                              ' image (%(error)s)')
                                            % {'filename': filename,
                                               'error': e})
-                    stats['num_invalid'] += 1
                 except FieldError as e:
                     raise ImageImportError(e)
-                    self._process_image(image_dir, filename)
             if image_dir != dirname:
                 shutil.rmtree(image_dir)
         else:

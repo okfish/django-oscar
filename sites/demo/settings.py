@@ -22,7 +22,6 @@ SQL_DEBUG = True
 SEND_BROKEN_LINK_EMAILS = False
 
 ADMINS = (
-    ('David Winterbottom', 'david.winterbottom@tangentlabs.co.uk'),
 )
 EMAIL_SUBJECT_PREFIX = '[Oscar demo] '
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -37,10 +36,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'oscar_demo',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '',
+        'USER': 'm',
     },
 }
 
@@ -137,7 +133,12 @@ MIDDLEWARE_CLASSES = (
     'oscar.apps.basket.middleware.BasketMiddleware',
 )
 
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
 INTERNAL_IPS = ('127.0.0.1',)
+DEBUG_TOOLBAR_CONFIG = {
+    'INTERCEPT_REDIRECTS': False
+}
+
 
 ROOT_URLCONF = 'urls'
 
@@ -274,10 +275,6 @@ HAYSTACK_CONNECTIONS = {
         'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
         'URL': 'http://127.0.0.1:8983/solr',
     },
-}
-
-DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False
 }
 
 AUTH_PROFILE_MODULE = 'user.Profile'

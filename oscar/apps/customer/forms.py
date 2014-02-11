@@ -9,7 +9,7 @@ from django.contrib.sites.models import get_current_site
 from django.core import validators
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
-from django.db.models import get_model
+from oscar.core.loading import get_model
 from django.utils.translation import ugettext_lazy as _
 
 from oscar.core.loading import get_profile_class, get_class
@@ -194,7 +194,7 @@ class EmailUserCreationForm(forms.ModelForm):
         email = normalise_email(self.cleaned_data['email'])
         if User._default_manager.filter(email=email).exists():
             raise forms.ValidationError(
-                _("A user with that email address already exists."))
+                _("A user with that email address already exists"))
         return email
 
     def clean_password2(self):
