@@ -27,17 +27,24 @@ def facet_data(request, form, results):  # noqa (too complex (10))
         facet_data[key] = {
             'name': facet['name'],
             'results': []}
+        facet_options = facet.get('options', 'not-set')
         for name, count in facet_counts['fields'][key]:
             # Ignore zero-count facets for field with appropriate 
             # settings 'mincount' in OSCAR_SEARCH_FACETS
-            if count == 0 and facet.get('mincount', 'not-set') == 'not-set' :
-                continue
             
+            if count == 0 and (facet_options == 'not-set' \
+                               or facet_options.get('mincount', 'not-set') == 'not-set'):
+                continue
+                        
             field_filter = '%s_exact' % facet['field']
             datum = {
                 'name': name,
                 'count': count}
-            if selected.get(field_filter, None) == name:
+            # Assume that name == None as for missing facets 
+            # and selected == {} as for browse all view
+            # then next line should be true if the default value of 'get' method set to None
+            # So I'd change it to 'not-selected'
+            if selected.get(field_filter, 'not-selected') == name:
                 # This filter is selected - build the 'deselect' URL
                 datum['selected'] = True
                 url = base_url.remove_query_param(
@@ -120,16 +127,16 @@ def append_to_sqs(sqs, form=None):
     Takes facet fields and queries from settings.OSCAR_SEARCH_FACETS 
     and appends to SearchQuerySet 
     """
-    kwargs = {}
     for facet in settings.OSCAR_SEARCH_FACETS['fields'].values():
-        mincount = facet.get('mincount', 'not-set') 
-        limit =  facet.get('limit', None)
+        #mincount = facet.get('mincount', 'not-set') 
+        #limit =  facet.get('limit', None)
         stats = facet.get('stats', False)
-        if not mincount == 'not-set':
-            kwargs['mincount'] = mincount
-        if limit:
-            kwargs['limit'] = limit                  
-        sqs = sqs.facet(facet['field'], **kwargs)
+        options = facet.get('options', {})
+        #if not mincount == 'not-set':
+        #    kwargs['mincount'] = mincount
+        #if limit:
+        #    kwargs['limit'] = limit                  
+        sqs = sqs.facet(facet['field'], **options)
         if stats:
             sqs = sqs.stats(facet['field'])
     for facet in settings.OSCAR_SEARCH_FACETS['queries'].values():
