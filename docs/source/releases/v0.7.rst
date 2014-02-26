@@ -10,10 +10,11 @@ Table of contents:
     :local:
     :depth: 1
 
-Python Compatibility
-=====================
+Compatibility
+=============
 
-Oscar 0.7 has experimental support for Python 3.
+Oscar 0.7 has experimental support for Python 3. Support for Django 1.4 has
+been dropped, and support for Django 1.6 is considered stable.
 
 What's new in Oscar 0.7?
 ========================
@@ -43,6 +44,35 @@ Minor changes
   :class:`~oscar.apps.dashboard.catalogue.views.ProductCreateUpdateView` has
   been simplified and now easily allows adding further formsets.
 
+* Increased required version of Django Haystack to 2.1
+
+* The dashboard's Bootstrap and the Bootstrap JS has been bumped to 2.3.2, the
+  latest release of version 2.
+
+* The dashboard's category handling now has the ability to directly create
+  child categories.
+
+* Oscar's error messages now have their own CSS class, ``error-block``
+  (`ef3ccf08a7`_).
+
+* It is now possible to disable the redirect that happens when a product or
+  category's slug changed and an old URL is used (`b920f8ba`_).
+
+* :class:`~oscar.apps.payment.forms.BankCardNumberField` now allows specifying
+  accepted card types (`32b7249`_).
+
+.. _`b920f8ba`: https://github.com/tangentlabs/django-oscar/commit/b920f8ba288cd2f19bb167db2a012479ba956397
+.. _`ef3ccf08a7`: https://github.com/tangentlabs/django-oscar/commit/ef3ccf08a707ae1250cdb8d5f2dc6f721d020dc4
+.. _`32b7249`: https://github.com/tangentlabs/django-oscar/commit/32b7249e44b40cb1b20d01226f77ae6777a20b91
+
+Bugfixes
+~~~~~~~~
+
+* Addresses in non-shipping countries can't be selected as default shipping
+  address anymore (`be04d46639`_).
+
+.. _be04d46639: https://github.com/tangentlabs/django-oscar/commit/be04d46639da9674959439d053c592af6dd9c5ac
+
 Backwards incompatible changes in 0.7
 =====================================
 
@@ -52,6 +82,12 @@ Backwards incompatible changes in 0.7
 
 * ``ProductCategory.is_canonical`` was an unused ``BooleanField`` and has been
   dropped.
+
+* `#1123`_ - The URL structure of ``ProductCreateRedirectView`` has been changed to use
+  the product class' slug instead of the primary key. It's necessary to update
+  URLs pointing to that view.
+
+.. _`#1123`: https://github.com/tangentlabs/django-oscar/pull/1123
 
 Removal of features deprecated in 0.6
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,6 +106,7 @@ Migrations
 * Catalogue:
 
     - ``0014`` - Drops unused ``ProductCategory.is_canonical`` field.
+    - ``0015`` - Turns a product's UPC field into a :class:`oscar.models.fields.NullCharField`
 
 Features deprecated in 0.6
 ==========================

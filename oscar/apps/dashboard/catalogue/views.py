@@ -14,6 +14,7 @@ from oscar.views import sort_queryset
 from oscar.views.generic import ObjectLookupView
 
 (ProductForm,
+ ProductClassSelectForm,
  ProductSearchForm,
  CategoryForm,
  StockRecordFormSet,
@@ -23,6 +24,7 @@ from oscar.views.generic import ObjectLookupView
  ProductRecommendationFormSet) \
     = get_classes('dashboard.catalogue.forms',
                   ('ProductForm',
+                   'ProductClassSelectForm',
                    'ProductSearchForm',
                    'CategoryForm',
                    'StockRecordFormSet',
@@ -63,14 +65,15 @@ class ProductListView(generic.ListView):
     model = Product
     context_object_name = 'products'
     form_class = ProductSearchForm
+    productclass_form_class = ProductClassSelectForm
     description_template = _(u'Products %(upc_filter)s %(title_filter)s')
     paginate_by = 20
     recent_products = 5
 
     def get_context_data(self, **kwargs):
         ctx = super(ProductListView, self).get_context_data(**kwargs)
-        ctx['product_classes'] = ProductClass.objects.all()
         ctx['form'] = self.form
+        ctx['productclass_form'] = self.productclass_form_class()
         if 'recently_edited' in self.request.GET:
             ctx['queryset_description'] \
                 = _("Last %(num_products)d edited products") \
@@ -142,26 +145,24 @@ class ProductListView(generic.ListView):
 
 class ProductCreateRedirectView(generic.RedirectView):
     permanent = False
+    productclass_form_class = ProductClassSelectForm
 
     def get_product_create_url(self, product_class):
         """ Allow site to provide custom URL """
         return reverse('dashboard:catalogue-product-create',
-                       kwargs={'product_class_id': product_class.id})
+                       kwargs={'product_class_slug': product_class.slug})
 
     def get_invalid_product_class_url(self):
         messages.error(self.request, _("Please choose a product class"))
         return reverse('dashboard:catalogue-product-list')
 
     def get_redirect_url(self, **kwargs):
-        product_class_id = self.request.GET.get('product_class')
-        if product_class_id is None or not product_class_id.isdigit():
-            return self.get_invalid_product_class_url()
-        try:
-            product_class = ProductClass.objects.get(id=product_class_id)
-        except ProductClass.DoesNotExist:
-            return self.get_invalid_product_class_url()
-        else:
+        form = self.productclass_form_class(self.request.GET)
+        if form.is_valid():
+            product_class = form.cleaned_data['product_class']
             return self.get_product_create_url(product_class)
+        else:
+            return self.get_invalid_product_class_url()
 
 
 class ProductCreateUpdateView(generic.UpdateView):
@@ -203,9 +204,10 @@ class ProductCreateUpdateView(generic.UpdateView):
         self.creating = not 'pk' in self.kwargs
         if self.creating:
             try:
-                product_class_id = self.kwargs.get('product_class_id', None)
+                product_class_slug = self.kwargs.get('product_class_slug',
+                                                     None)
                 self.product_class = ProductClass.objects.get(
-                    id=product_class_id)
+                    slug=product_class_slug)
             except ObjectDoesNotExist:
                 raise Http404
             else:
@@ -299,15 +301,6 @@ class ProductCreateUpdateView(generic.UpdateView):
         if self.creating and self.object and self.object.pk is not None:
             self.object.delete()
             self.object = None
-
-        # We currently don't hold on to images if the other formsets didn't
-        # validate. But as the browser won't re-POST any images, we can do no
-        # better than re-bind the image formset, which means the user will
-        # have to re-select the images
-        image_formset_class = self.formsets.get('image_formset')
-        if 'image_formset' in formsets and image_formset_class is not None:
-            formsets['image_formset'] = image_formset_class(
-                self.product_class, self.request.user, instance=self.object)
 
         messages.error(self.request,
                        _("Your submitted data was not valid - please "
@@ -428,6 +421,13 @@ class CategoryCreateView(CategoryListMixin, generic.CreateView):
     def get_success_url(self):
         messages.info(self.request, _("Category created successfully"))
         return super(CategoryCreateView, self).get_success_url()
+
+    def get_initial(self):
+        # set child category if set in the URL kwargs
+        initial = super(CategoryCreateView, self).get_initial()
+        if 'parent' in self.kwargs:
+            initial['_ref_node_id'] = self.kwargs['parent']
+        return initial
 
 
 class CategoryUpdateView(CategoryListMixin, generic.UpdateView):

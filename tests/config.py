@@ -69,12 +69,13 @@ def configure():
             'LOGIN_REDIRECT_URL': '/accounts/',
             'STATIC_URL': '/static/',
             'COMPRESS_ENABLED': False,
+            'COMPRESS_ROOT': '',  # needed to avoid issue #1214
             'ADMINS': ('admin@example.com',),
             'DEBUG': False,
             'SITE_ID': 1,
             'APPEND_SLASH': True,
             'DDF_DEFAULT_DATA_FIXTURE': 'tests.dynamic_fixtures.OscarDynamicDataFixtureClass',
-            'SESSION_SERIALIZER': 'django.contrib.sessions.serializers.PickleSerializer',
+            'SESSION_SERIALIZER': 'django.contrib.sessions.serializers.JSONSerializer',
         }
         if django.VERSION >= (1, 5):
             test_settings['INSTALLED_APPS'] += ['tests._site.myauth', ]
