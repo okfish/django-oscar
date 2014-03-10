@@ -1,12 +1,12 @@
-from itertools import chain
-from datetime import datetime, date
-import logging
-from django.utils.html import strip_tags
-from django.utils.safestring import mark_safe
 import os
 import six
 import warnings
+from itertools import chain
+from datetime import datetime, date
+import logging
 
+from django.utils.html import strip_tags
+from django.utils.safestring import mark_safe
 from django.conf import settings
 from django.contrib.staticfiles.finders import find
 from django.core.exceptions import ValidationError, ImproperlyConfigured
@@ -16,11 +16,12 @@ from django.db import models
 from django.db.models import Sum, Count
 from django.utils.translation import ugettext_lazy as _
 from django.utils.functional import cached_property
+
 from treebeard.mp_tree import MP_Node
 
 from oscar.core.utils import slugify
 from oscar.core.loading import get_classes, get_model
-from oscar.models.fields import NullCharField
+from oscar.models.fields import NullCharField, AutoSlugField
 
 ProductManager, BrowsableProductManager = get_classes(
     'catalogue.managers', ['ProductManager', 'BrowsableProductManager'])
@@ -37,7 +38,8 @@ class AbstractProductClass(models.Model):
     Not necessarily equivalent to top-level categories but usually will be.
     """
     name = models.CharField(_('Name'), max_length=128)
-    slug = models.SlugField(_('Slug'), max_length=128, unique=True)
+    slug = AutoSlugField(_('Slug'), max_length=128, unique=True,
+                         populate_from='name')
 
     #: Some product type don't require shipping (eg digital products) - we use
     #: this field to take some shortcuts in the checkout.
@@ -59,11 +61,6 @@ class AbstractProductClass(models.Model):
         ordering = ['name']
         verbose_name = _("Product Class")
         verbose_name_plural = _("Product Classes")
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        return super(AbstractProductClass, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.name
@@ -191,67 +188,6 @@ class AbstractProductCategory(models.Model):
         return u"<productcategory for product '%s'>" % self.product
 
 
-class AbstractContributorRole(models.Model):
-    """
-    A role that may be performed by a contributor to a product, eg Author,
-    Actor, Director.
-    """
-    name = models.CharField(_('Name'), max_length=50)
-    name_plural = models.CharField(_('Name Plural'), max_length=50)
-    slug = models.SlugField()
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        abstract = True
-        verbose_name = _('Contributor Role')
-        verbose_name_plural = _('Contributor Roles')
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super(AbstractContributorRole, self).save(*args, **kwargs)
-
-
-class AbstractContributor(models.Model):
-    """
-    Represents a person or business that has contributed to a product in some
-    way. eg an author.
-    """
-    name = models.CharField(_("Name"), max_length=255)
-    slug = models.SlugField(_("Slug"), max_length=255, unique=False)
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        abstract = True
-        verbose_name = _('Contributor')
-        verbose_name_plural = _('Contributors')
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super(AbstractContributor, self).save(*args, **kwargs)
-
-
-class AbstractProductContributor(models.Model):
-    product = models.ForeignKey('catalogue.Product', verbose_name=_("Product"))
-    contributor = models.ForeignKey('catalogue.Contributor',
-                                    verbose_name=_("Contributor"))
-    role = models.ForeignKey('catalogue.ContributorRole', blank=True,
-                             null=True, verbose_name=_("Contributor Role"))
-
-    def __unicode__(self):
-        return '%s <- %s - %s' % (self.product, self.role, self.contributor)
-
-    class Meta:
-        abstract = True
-        verbose_name = _('Product Contributor')
-        verbose_name_plural = _('Product Contributors')
-
-
 class AbstractProduct(models.Model):
     """
     The base product object
@@ -285,13 +221,8 @@ class AbstractProduct(models.Model):
     slug = models.SlugField(_('Slug'), max_length=255, unique=False)
     description = models.TextField(_('Description'), blank=True, null=True)
 
-    #: Status field which is not used by core Oscar. Added because it's
-    # commonly needed to e.g. indicate if the product is inactive or awaiting
-    #: approval.
-    status = models.CharField(_('Status'), max_length=128, blank=True,
-                              null=True, db_index=True)
     product_class = models.ForeignKey(
-        'catalogue.ProductClass', verbose_name=_('Product Class'), null=True,
+        'catalogue.ProductClass', verbose_name=_('Product Type'), null=True,
         related_name="products",
         help_text=_("""Choose what type of product this is"""))
     attributes = models.ManyToManyField(
@@ -706,7 +637,7 @@ class AbstractProductAttribute(models.Model):
     """
     product_class = models.ForeignKey(
         'catalogue.ProductClass', related_name='attributes', blank=True,
-        null=True, verbose_name=_("Product Class"))
+        null=True, verbose_name=_("Product Type"))
     name = models.CharField(_('Name'), max_length=128)
     code = models.SlugField(
         _('Code'), max_length=128,
@@ -1066,7 +997,8 @@ class AbstractOption(models.Model):
     when add the item to their basket.
     """
     name = models.CharField(_("Name"), max_length=128)
-    code = models.SlugField(_("Code"), max_length=128, unique=True)
+    code = AutoSlugField(_("Code"), max_length=128, unique=True,
+                         populate_from='name')
 
     REQUIRED, OPTIONAL = ('Required', 'Optional')
     TYPE_CHOICES = (
@@ -1083,11 +1015,6 @@ class AbstractOption(models.Model):
 
     def __unicode__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        if not self.code:
-            self.code = slugify(self.name)
-        super(AbstractOption, self).save(*args, **kwargs)
 
     @property
     def is_required(self):

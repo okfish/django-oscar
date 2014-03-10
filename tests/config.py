@@ -30,6 +30,8 @@ def configure():
                 'django.contrib.staticfiles',
                 'sorl.thumbnail',
                 'compressor',
+                'tests._site.model_tests_app',  # contains models we need for testing
+
                 # Use a custom partner app to test overriding models.  I can't
                 # find a way of doing this on a per-test basis, so I'm using a
                 # global change.
@@ -73,6 +75,7 @@ def configure():
             'ADMINS': ('admin@example.com',),
             'DEBUG': False,
             'SITE_ID': 1,
+            'USE_TZ': 1,
             'APPEND_SLASH': True,
             'DDF_DEFAULT_DATA_FIXTURE': 'tests.dynamic_fixtures.OscarDynamicDataFixtureClass',
             'SESSION_SERIALIZER': 'django.contrib.sessions.serializers.JSONSerializer',

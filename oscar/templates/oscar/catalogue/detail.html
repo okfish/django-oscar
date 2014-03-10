@@ -20,7 +20,7 @@
 {% block breadcrumbs %}
 <ul class="breadcrumb">
 	<li>
-		<a href="{% url 'promotions:home' %}">{% trans "Home" %}</a>
+		<a href="{{ homepage_url }}">{% trans "Home" %}</a>
         <span class="divider">/</span>
     </li>
     {% with category=product.categories.all.0 %}
@@ -132,7 +132,7 @@
         </tr>
         {% endif %}
         <tr>
-            <th>{% trans "Product class" %}</th><td>{{ product.get_product_class.name }}</td>
+            <th>{% trans "Product Type" %}</th><td>{{ product.get_product_class.name }}</td>
         </tr>
 
         {% purchase_info_for_product request product as session %}

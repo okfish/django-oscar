@@ -227,7 +227,7 @@ class ProductListView(ListView):
 
     def get_queryset(self):
         q = self.get_search_query()
-        qs = Product.browsable.base_queryset()
+        qs = model.browsable.base_queryset()
         if q:
             # Send signal to record this search
             self.search_signal.send(sender=self, query=q,
@@ -237,15 +237,15 @@ class ProductListView(ListView):
             return qs
 
     def get_context_data(self, **kwargs):
-        context = super(ProductListView, self).get_context_data(**kwargs)
+        ctx = super(ProductListView, self).get_context_data(**kwargs)
         q = self.get_search_query()
         if not q:
-            context['summary'] = _('All products')
+            ctx['summary'] = _('All products')
         else:
-            context['summary'] = _("Products matching '%(query)s'") \
+            ctx['summary'] = _("Products matching '%(query)s'") \
                 % {'query': q}
-            context['search_term'] = q
-        return context
+            ctx['search_term'] = q
+        return ctx
 
 class ProductFacetedListView(FacetedSearchMixin, ProductListView):
     """
@@ -287,4 +287,3 @@ class ProductFacetedListView(FacetedSearchMixin, ProductListView):
         self.form = self.build_form()
         sqs = SearchQuerySet().all()
         self.searchqueryset = facets.append_to_sqs(sqs, self.form)
-
