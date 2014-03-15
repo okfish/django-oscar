@@ -56,7 +56,7 @@ class AbstractPartner(models.Model):
     """
     code = AutoSlugField(_("Code"), max_length=128, unique=True,
                          populate_from='name')
-    name = models.CharField(_("Name"), max_length=128, null=True, blank=True)
+    name = models.CharField(_("Name"), max_length=128, blank=True)
 
     #: A partner can have users assigned to it. This is used
     #: for access modelling in the permission-based dashboard
@@ -66,9 +66,7 @@ class AbstractPartner(models.Model):
 
     @property
     def display_name(self):
-        if not self.name:
-            return self.code
-        return self.name
+        return self.name or self.code
 
     @property
     def primary_address(self):
@@ -107,7 +105,7 @@ class AbstractPartner(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return self.name
+        return self.display_name
 
 
 class AbstractStockRecord(models.Model):

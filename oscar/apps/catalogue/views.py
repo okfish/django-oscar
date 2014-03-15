@@ -132,43 +132,42 @@ class ProductCategoryView(ListView):
         if 'pk' in self.kwargs:
             self.category = get_object_or_404(Category, pk=self.kwargs['pk'])
         else:
-            self.category = get_object_or_404(
-                Category, slug=self.kwargs['category_slug'])
+            self.category = None
 
     def get(self, request, *args, **kwargs):
         self.get_object()
-        self.categories = self.get_categories()
-
-        if self.enforce_paths:
+        if self.enforce_paths and self.category is not None:
             # Categories are fetched by primary key to allow slug changes
             # If the slug has indeed changed, issue a redirect
             correct_path = self.category.get_absolute_url()
             if correct_path != request.path:
                 return HttpResponsePermanentRedirect(correct_path)
-
         return super(ProductCategoryView, self).get(request, *args, **kwargs)
 
     def get_categories(self):
         """
         Return a list of the current category and it's ancestors
         """
-        categories = list(self.category.get_descendants())
-        categories.append(self.category)
-        return categories
+        return list(self.category.get_descendants()) + [self.category]
+
+    def get_summary(self):
+        """
+        Summary to be shown in template
+        """
+        return self.category.name if self.category else _('All products')
 
     def get_context_data(self, **kwargs):
         context = super(ProductCategoryView, self).get_context_data(**kwargs)
-
-        context['categories'] = self.categories
         context['category'] = self.category
-        context['summary'] = self.category.name
+        context['summary'] = self.get_summary()
         return context
 
     def get_queryset(self):
-        return Product.browsable.base_queryset().filter(
-            categories__in=self.categories
-        ).distinct()
-
+        qs = Product.browsable.base_queryset()
+        if self.category is not None:
+            categories = self.get_categories()
+            qs = qs.filter(categories__in=categories).distinct()
+        return qs
 
 class ProductFacetedCategoryView(FacetedSearchMixin, ProductCategoryView):
     template_name = 'catalogue/browse.html'
