@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from haystack.query import SearchQuerySet
 
 from oscar.core.loading import get_class
-from oscar.apps.catalogue.signals import product_viewed, product_search
+from oscar.apps.catalogue.signals import product_viewed
 from oscar.apps.catalogue.mixins import FacetedSearchMixin
 from oscar.apps.catalogue.forms import CategoryFacetForm
 from oscar.apps.search import facets
@@ -210,7 +210,6 @@ class ProductFacetedCategoryView(FacetedSearchMixin, ProductCategoryView):
         sqs = SearchQuerySet().filter(category=self.category)
         self.searchqueryset = facets.append_to_sqs(sqs, self.form)
 
-
 class ProductListView(ListView):
     """
     A list of products
@@ -218,7 +217,6 @@ class ProductListView(ListView):
     context_object_name = "products"
     template_name = 'catalogue/browse.html'
     paginate_by = settings.OSCAR_PRODUCTS_PER_PAGE
-    search_signal = product_search
     model = Product
 
     def get_search_query(self):
@@ -226,25 +224,11 @@ class ProductListView(ListView):
         return q.strip() if q else q
 
     def get_queryset(self):
-        q = self.get_search_query()
-        qs = model.browsable.base_queryset()
-        if q:
-            # Send signal to record this search
-            self.search_signal.send(sender=self, query=q,
-                                    user=self.request.user)
-            return qs.filter(title__icontains=q)
-        else:
-            return qs
+        return self.model.browsable.base_queryset()
 
     def get_context_data(self, **kwargs):
         ctx = super(ProductListView, self).get_context_data(**kwargs)
-        q = self.get_search_query()
-        if not q:
-            ctx['summary'] = _('All products')
-        else:
-            ctx['summary'] = _("Products matching '%(query)s'") \
-                % {'query': q}
-            ctx['search_term'] = q
+        ctx['summary'] = _("Products matching '%(query)s'")
         return ctx
 
 class ProductFacetedListView(FacetedSearchMixin, ProductListView):
