@@ -170,6 +170,9 @@ class ProductCategoryView(ListView):
         return qs
 
 class ProductFacetedCategoryView(FacetedSearchMixin, ProductCategoryView):
+    """
+    Browse given category with facets enabled. Based on @laidibug commits.
+    """
     template_name = 'catalogue/browse.html'
     searchqueryset = None
     form_class = CategoryFacetForm
@@ -177,19 +180,16 @@ class ProductFacetedCategoryView(FacetedSearchMixin, ProductCategoryView):
     def get(self, request, *args, **kwargs):
         self.get_object()
         self.get_searchqueryset()
-        correct_path = self.category.get_absolute_url()
-        if correct_path != request.path:
-            return HttpResponsePermanentRedirect(correct_path)
-        self.categories = self.get_categories()
         return super(
             ProductFacetedCategoryView, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(
             ProductFacetedCategoryView, self).get_context_data(**kwargs)
-        context['categories'] = self.categories
-        context['category'] = self.category
-        context['summary'] = self.category.name
+        if self.category is not None:
+            context['categories'] = self.get_categories()
+            context['category'] = self.category
+            context['summary'] = self.category.name
         if 'fields' in context['facets']:
             # Convert facet data into a more useful datastructure
             context['facet_data'] = facets.facet_data(
@@ -206,67 +206,7 @@ class ProductFacetedCategoryView(FacetedSearchMixin, ProductCategoryView):
 
     def get_searchqueryset(self):
         self.form = self.build_form()
-        sqs = SearchQuerySet().filter(category=self.category)
-        self.searchqueryset = facets.append_to_sqs(sqs, self.form)
-
-class ProductListView(ListView):
-    """
-    A list of products
-    """
-    context_object_name = "products"
-    template_name = 'catalogue/browse.html'
-    paginate_by = settings.OSCAR_PRODUCTS_PER_PAGE
-    model = Product
-
-    def get_search_query(self):
-        q = self.request.GET.get('q', None)
-        return q.strip() if q else q
-
-    def get_queryset(self):
-        return self.model.browsable.base_queryset()
-
-    def get_context_data(self, **kwargs):
-        ctx = super(ProductListView, self).get_context_data(**kwargs)
-        ctx['summary'] = _("Products matching '%(query)s'")
-        return ctx
-
-class ProductFacetedListView(FacetedSearchMixin, ProductListView):
-    """
-    A list of products with facets. Based on @laidibug commits
-    """
-    template_name = 'catalogue/browse.html'
-    searchqueryset = None
-    form_class = CategoryFacetForm
-
-    def get(self, request, *args, **kwargs):
-        self.get_searchqueryset()
-        return super(
-            ProductFacetedListView, self).get(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super(
-            ProductFacetedListView, self).get_context_data(**kwargs)
-
-        context['summary'] = _('All products')
-        if 'fields' in context['facets']:
-            
-            # Convert facet data into a more useful datastructure
-            context['facet_data'] = facets.facet_data(
-                self.request, self.form, self.results)
-            has_facets = any([len(data['results']) for
-                              data in context['facet_data'].values()])
-            has_selected = self.request.GET.get('selected_facets', None)
-            if has_selected:
-                context['summary'] = _("Products matching your selection")
-            context['has_facets'] = has_facets
-        return context
-
-#     def get_queryset(self):
-#         self.form = self.build_form()
-#         self.results = self.form.search()
-#         return self.results
-
-    def get_searchqueryset(self):
-        self.form = self.build_form()
-        sqs = SearchQuerySet().all()
+        sqs = SearchQuerySet()
+        if self.category is not None:
+            sqs = sqs.filter(category=self.category)
         self.searchqueryset = facets.append_to_sqs(sqs, self.form)
