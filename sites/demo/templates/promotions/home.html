@@ -5,6 +5,24 @@
 
 {% block body_class %}home-page{% endblock body_class %}
 
+{% block navigation %}
+{% include "partials/nav_primary.html" %}
+
+<div class="nav-alphabet nav-collapse navbar clearfix">
+	<div class="container-fluid">
+		{% if has_facets %}
+			{% if facet_data.author %}
+				{% include 'search/partials/facet_abc.html' with name=facet_data.author.name items=facet_data.author.results %}
+			{% else %}
+				{% trans "no authorss found" %}
+			{% endif %}
+		{% else %}
+			{% trans "no facets set" %} 
+		{% endif %}	
+	</div>
+</div>
+{% endblock  %}
+
 {% block header %}
 {% endblock %}
 
