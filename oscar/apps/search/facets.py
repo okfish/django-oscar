@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse, reverse_lazy
 
+from oscar.core.utils import slugify
+
 from purl import URL
 from six.moves import map
 
@@ -37,9 +39,16 @@ def facet_data(request, form, results):  # noqa (too complex (10))
                 continue
                         
             field_filter = '%s_exact' % facet['field']
+            # Add slug on-the-fly generated slug field for
+            # easier filter customizing
+            
+            slug = '%s_%s' % (facet['field'], slugify(name))
+            
             datum = {
                 'name': name,
-                'count': count}
+                'count': count,
+                'slug' : slug,
+                }
             # Assume that name == None as for missing facets 
             # and selected == {} as for browse all view
             # then next line should be true if the default value of 'get' method set to None

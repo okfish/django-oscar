@@ -44,3 +44,11 @@ class SimpleRangeInput(AbstractFacetWidget):
     
     """
     template_name = 'search/partials/facet_range.html'
+
+class ColorPicker(AbstractFacetWidget):
+    """
+    Simple color selector widget with css'ed color classes
+    made of facet's slug field
+    """
+    template_name = 'search/partials/facet_colorpicker.html'
+
