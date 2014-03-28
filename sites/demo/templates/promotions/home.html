@@ -11,11 +11,13 @@
 <div class="nav-alphabet nav-collapse navbar clearfix">
 	<div class="container-fluid">
 		{% if has_facets %}
-			{% if facet_data.author %}
-				{% include 'search/partials/facet_abc.html' with name=facet_data.author.name items=facet_data.author.results %}
-			{% else %}
-				{% trans "no authorss found" %}
-			{% endif %}
+			{% for field, data in facet_data.items %}
+            	
+                {% if data.results and field == 'author' %}
+                	{% render_facet field data %}
+                    
+                {% endif %}
+            {% endfor %}
 		{% else %}
 			{% trans "no facets set" %} 
 		{% endif %}	
