@@ -45,6 +45,14 @@ class SimpleRangeInput(AbstractFacetWidget):
     """
     template_name = 'search/partials/facet_range.html'
 
+class AjaxRangeInput(AbstractFacetWidget):
+    """
+    Simple range widget with two text input fields.
+    
+    """
+    template_name = 'search/partials/facet_slider.html'
+
+
 class ColorPicker(AbstractFacetWidget):
     """
     Simple color selector widget with css'ed color classes
