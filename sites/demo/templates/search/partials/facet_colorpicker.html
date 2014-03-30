@@ -1,0 +1,19 @@
+{% load i18n %}
+
+<dt>{{ name }}</dt>
+{% for item in items %}
+<dd>
+    {% with item_count=item.count %}
+        {% if item.selected %}
+            <strong>{{ item.name }} ({{ item_count }})</strong>
+            <small><a class="selected {{ item.slug }}" title="Remove {{ item.name }}" href="{{ item.deselect_url }}">{% trans "Remove" %}</a></small>
+        {% else %}
+                {% if item_count %}
+                    <a  class="{{ item.slug }}" title="{{ item.name }}" href="{{ item.select_url }}">{{ item.name }}</a> ({{ item_count }})
+                {% else %}
+                    <span class="empty {{ item.slug }}" >{{ item.name }}</span> (0)
+                {% endif %}
+        {% endif %}
+    {% endwith %}
+</dd>
+{% endfor %}
