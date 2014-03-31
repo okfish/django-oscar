@@ -1,0 +1,29 @@
+{% load i18n %}
+
+<!--SliderRange view form for field {{ name }}---->
+
+<div class="input-range">
+	{% for item in items %}
+		<div>
+			
+			{% with item_count=item.count %}
+				{% if item_count %}
+					<dt><strong>{{ item.name }}</strong>({% trans "selected" %} {{ item_count }})</dt>
+					<dd></dd><form action="{{ item.deselect_url }}" id="{{ field }}_form">
+				    <label class="help-inline"><small>{% trans "from" %}</small></label><input class="input-mini" type="text" size="5" maxlength="5" max="{{ item.stats.max }}" min="{{ item.stats.min }}" value="{{ item.stats.min }}" id="{{ field }}_start" name="{{ field }}_start"/>
+				    	<label class="help-inline"><small>{% trans "to" %}</small></label><input  class="input-mini" type="text"  size="5" maxlength="5" max="{{ item.stats.max }}" min="{{ item.stats.min }}" value="{{ item.stats.max }}" id="{{ field }}_stop" name="{{ field }}_stop"/>
+				    
+				    <input type="text" class="slider" value=""  data-slider-min="{{ item.stats.min|floatformat:"0" }}" data-slider-max="{{ item.stats.max|floatformat:"0" }}" data-slider-value="[{{ item.stats.min|floatformat }},{{ item.stats.max|floatformat }}]" data-slider-orientation="horizontal" data-slider-selection="after" />
+				    
+				    <input type="submit" value="{% trans "Update" %}" class="btn">
+				    	<strong>[<a title="Show all" href="{{ item.deselect_url }}">X</a></strong>]
+			    	</form>
+			    	</dd>
+			     {% endif %}	
+			{% endwith %}
+		</div>
+		
+	{% endfor %}
+</div>
+
+<!--SliderRange view form for field {{ name }}---->  

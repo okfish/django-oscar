@@ -1,5 +1,25 @@
+{% load staticfiles %}
+
+<script type="text/javascript" src="{% static "demo/js/bootstrap/bootstrap-slider.js" %}"></script>
 <script type="text/javascript">
 (function(o, $) {
+				$('.slider').slider({
+					tooltip: 'show',
+					handle: 'square',
+					step: 1,
+					formater: function(value) {
+            						return value+'р.';
+          						}
+				}).on('slide', function(slideEvt) {
+									$('#{{ field }}_start').val(slideEvt.value[0]);
+									//$('#{{ field }}_stop').val(slideEvt.value[1]);
+								}
+				 ).on('slide', function(slideEvt) {
+									//$('#{{ field }}_start').val(slideEvt.value[0]);
+									$('#{{ field }}_stop').val(slideEvt.value[1]);
+								}
+				   );
+		
 				$('#{{ field }}_form').submit(function(e){
                         var start = $('#{{ field }}_start').val();
                         $('#{{ field }}_start').attr("disabled", "disabled");

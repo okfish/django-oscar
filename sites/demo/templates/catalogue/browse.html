@@ -7,7 +7,17 @@
 {% load product_tags %}
 {% load category_tags %}
 {% load search_tags %}
+{% load staticfiles %}
 {% load i18n %}
+
+{% block extrahead %}
+{% compress css %}
+	{{ block.super }}
+	{% if has_facets %}
+		<link rel="stylesheet" href="{% static "demo/css/slider.css" %}">
+    {% endif %}
+{% endcompress %}    
+{% endblock %}
 
 {% block navigation %}
 {% include "partials/nav_primary.html" %}
