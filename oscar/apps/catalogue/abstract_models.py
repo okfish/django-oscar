@@ -311,7 +311,7 @@ class AbstractProduct(models.Model):
         # Allow attribute validation to be skipped.  This is required when
         # saving a parent product which belongs to a product class with
         # required attributes.
-        if kwargs.pop('validate_attributes', True):
+        if kwargs.pop('validate_attributes', True) and not self.is_group:
             self.attr.validate_attributes()
 
         # Save product
