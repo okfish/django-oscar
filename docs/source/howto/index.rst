@@ -17,6 +17,7 @@ Customisation
     how_to_disable_an_app
     how_to_change_a_url
     how_to_customise_a_view
+    how_to_customise_a_mixin
     how_to_configure_the_dashboard_navigation
     how_to_customise_oscar_communications
 
@@ -53,7 +54,7 @@ Payment
     :maxdepth: 1
 
     how_to_integrate_payment
-    how_to_apply_tax_exemptions
+    how_to_handle_us_taxes
 
 Shipping
 --------
@@ -89,10 +90,3 @@ Appearance
 
     how_to_handle_statics
 
-Complex use cases
------------------
-
-.. toctree::
-   :maxdepth: 1
-
-   multi_dealer_setup

@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, View
 from django.contrib import messages
-from django.db.models import get_model
+from oscar.core.loading import get_model
 from django.utils.translation import ugettext_lazy as _
 
 from oscar.core.loading import get_classes
@@ -17,8 +17,8 @@ Product = get_model('catalogue', 'product')
 
 class CreateProductReview(CreateView):
     template_name = "catalogue/reviews/review_form.html"
-    model = get_model('reviews', 'ProductReview')
-    product_model = get_model('catalogue', 'product')
+    model = ProductReview
+    product_model = Product
     form_class = ProductReviewForm
     view_signal = review_added
 
@@ -108,8 +108,8 @@ class ProductReviewList(ListView):
     """
     template_name = 'catalogue/reviews/review_list.html'
     context_object_name = "reviews"
-    model = get_model('reviews', 'productreview')
-    product_model = get_model('catalogue', 'product')
+    model = ProductReview
+    product_model = Product
     paginate_by = 20
 
     def get_queryset(self):

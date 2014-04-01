@@ -3,7 +3,7 @@ import operator
 from decimal import Decimal as D, ROUND_DOWN, ROUND_UP
 
 from django.core import exceptions
-from django.db.models import get_model
+from oscar.core.loading import get_model
 from django.template.defaultfilters import date as date_filter
 from django.db import models
 from django.utils.timezone import now, get_current_timezone
@@ -14,10 +14,11 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 
 from oscar.core.utils import slugify
+from oscar.core.loading import get_class
 from oscar.apps.offer.managers import ActiveOfferManager
 from oscar.templatetags.currency_filters import currency
-from oscar.models.fields import PositiveDecimalField, ExtendedURLField
-from oscar.core.loading import get_class
+from oscar.models.fields import (PositiveDecimalField, ExtendedURLField,
+                                 AutoSlugField)
 
 BrowsableRangeManager = get_class('offer.managers', 'BrowsableRangeManager')
 
@@ -65,7 +66,8 @@ class ConditionalOffer(models.Model):
     name = models.CharField(
         _("Name"), max_length=128, unique=True,
         help_text=_("This is displayed within the customer's basket"))
-    slug = models.SlugField(_("Slug"), max_length=128, unique=True, null=True)
+    slug = AutoSlugField(_("Slug"), max_length=128, unique=True,
+                         populate_from='name')
     description = models.TextField(_("Description"), blank=True,
                                    help_text=_("This is displayed on the offer"
                                                " browsing page"))
@@ -175,14 +177,7 @@ class ConditionalOffer(models.Model):
         verbose_name = _("Conditional offer")
         verbose_name_plural = _("Conditional offers")
 
-        # The way offers are looked up involves the fields (offer_type, status,
-        # start_datetime, end_datetime).  Ideally, you want a DB index that
-        # covers these 4 fields (will add support for this in Django 1.5)
-
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-
         # Check to see if consumption thresholds have been broken
         if not self.is_suspended:
             if self.get_max_applications() == 0:
@@ -352,7 +347,10 @@ class ConditionalOffer(models.Model):
 
         def hide_time_if_zero(dt):
             # Only show hours/minutes if they have been specified
-            localtime = dt.astimezone(get_current_timezone())
+            if dt.tzinfo:
+                localtime = dt.astimezone(get_current_timezone())
+            else:
+                localtime = dt
             if localtime.hour == 0 and localtime.minute == 0:
                 return date_filter(localtime, settings.DATE_FORMAT)
             return date_filter(localtime, settings.DATETIME_FORMAT)
@@ -421,7 +419,7 @@ class Condition(models.Model):
     range = models.ForeignKey(
         'offer.Range', verbose_name=_("Range"), null=True, blank=True)
     type = models.CharField(_('Type'), max_length=128, choices=TYPE_CHOICES,
-                            null=True, blank=True)
+                            blank=True)
     value = PositiveDecimalField(_('Value'), decimal_places=2, max_digits=12,
                                  null=True, blank=True)
 
@@ -759,7 +757,7 @@ class Range(models.Model):
         verbose_name=_("Excluded Products"))
     classes = models.ManyToManyField(
         'catalogue.ProductClass', related_name='classes', blank=True,
-        verbose_name=_("Product Classes"))
+        verbose_name=_("Product Types"))
     included_categories = models.ManyToManyField(
         'catalogue.Category', related_name='includes', blank=True,
         verbose_name=_("Included Categories"))

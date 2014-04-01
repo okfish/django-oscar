@@ -43,10 +43,10 @@ demo: install
 	# Create catalogue (create product classes from fixture than import CSV files)
 	sites/demo/manage.py loaddata sites/demo/fixtures/auth.json sites/demo/fixtures/offers.json
 	sites/demo/manage.py loaddata sites/demo/fixtures/product-classes.json sites/demo/fixtures/product-attributes.json sites/demo/fixtures/shipping-event-types.json
-	sites/demo/manage.py create_products --class=Books sites/demo/fixtures/books.csv
-	sites/demo/manage.py create_products --class=Downloads sites/demo/fixtures/downloads.csv
-	sites/demo/manage.py create_products --class=Clothing sites/demo/fixtures/clothing.csv
-	sites/demo/manage.py import_product_images sites/demo/fixtures/images/
+	sites/demo/manage.py create_demo_products --class=Books sites/demo/fixtures/books.csv
+	sites/demo/manage.py create_demo_products --class=Downloads sites/demo/fixtures/downloads.csv
+	sites/demo/manage.py create_demo_products --class=Clothing sites/demo/fixtures/clothing.csv
+	sites/demo/manage.py oscar_import_catalogue_images sites/demo/fixtures/images.tar.gz
 	# Update search index
 	sites/demo/manage.py clear_index --noinput
 	sites/demo/manage.py update_index catalogue
@@ -99,8 +99,6 @@ css:
 	lessc oscar/static/oscar/less/styles.less > oscar/static/oscar/css/styles.css
 	lessc oscar/static/oscar/less/responsive.less > oscar/static/oscar/css/responsive.css
 	lessc oscar/static/oscar/less/dashboard.less > oscar/static/oscar/css/dashboard.css
-
-demo_css:
 	# Compile CSS for demo site
 	lessc sites/demo/static/demo/less/styles.less > sites/demo/static/demo/css/styles.css
 	lessc sites/demo/static/demo/less/responsive.less > sites/demo/static/demo/css/responsive.css

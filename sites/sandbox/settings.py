@@ -12,7 +12,6 @@ USE_TZ = True
 DEBUG = True
 TEMPLATE_DEBUG = True
 SQL_DEBUG = True
-SEND_BROKEN_LINK_EMAILS = False
 
 ALLOWED_HOSTS = ['latest.oscarcommerce.com',
                  'sandbox.oscar.tangentlabs.co.uk',
@@ -59,22 +58,30 @@ TIME_ZONE = 'Europe/London'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-gb'
 
-# This should match the locale folders in oscar/locale
+# Includes all languages that have >50% coverage in Transifex
+# Taken from Django's default setting for LANGUAGES
+gettext_noop = lambda s: s
 LANGUAGES = (
-    ('en-gb', 'English'),
-    ('da', 'Danish'),
-    ('de', 'German'),
-    ('el', 'Greek'),
-    ('en', 'English'),
-    ('es', 'Spanish'),
-    ('fr', 'French'),
-    ('it', 'Italian'),
-    ('ja', 'Japanese'),
-    ('pl', 'Polish'),
-    ('pt', 'Portugese'),
-    ('ru', 'Russian'),
-    ('sk', 'Slovakian'),
+    ('en-gb', gettext_noop('British English')),
+    ('zh-cn', gettext_noop('Simplified Chinese')),
+    ('nl', gettext_noop('Dutch')),
+    ('it', gettext_noop('Italian')),
+    ('pl', gettext_noop('Polish')),
+    ('ru', gettext_noop('Russian')),
+    ('sk', gettext_noop('Slovak')),
+    ('pt-br', gettext_noop('Brazilian Portuguese')),
+    ('fr', gettext_noop('French')),
+    ('de', gettext_noop('German')),
+    ('ko', gettext_noop('Korean')),
+    ('uk', gettext_noop('Ukrainian')),
+    ('es', gettext_noop('Spanish')),
+    ('da', gettext_noop('Danish')),
+    ('ar', gettext_noop('Arabic')),
+    ('ca', gettext_noop('Catalan')),
+    ('cs', gettext_noop('Czech')),
+    ('el', gettext_noop('Greek')),
 )
+
 ROSETTA_STORAGE_CLASS = 'rosetta.storage.SessionRosettaStorage'
 ROSETTA_ENABLE_TRANSLATION_SUGGESTIONS = True
 ROSETTA_REQUIRES_AUTH = False
@@ -299,6 +306,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.flatpages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'django_extensions',
     # Debug toolbar + extensions
     'debug_toolbar',
@@ -371,9 +379,6 @@ from oscar.defaults import *
 # ====
 
 OSCAR_SHOP_TAGLINE = 'Sandbox'
-
-# Enter Google Analytics ID for the tracking to be included in the templates
-GOOGLE_ANALYTICS_ID = 'UA-45363517-3'
 
 OSCAR_RECENTLY_VIEWED_PRODUCTS = 20
 OSCAR_ALLOW_ANON_CHECKOUT = True

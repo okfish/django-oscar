@@ -25,7 +25,8 @@ Further reading:
   experimental but feel free to explore and get a feel for the base Oscar
   install.)
 * `Documentation`_ on the excellent `readthedocs.org`_
-* `Google Group`_ - the mailing list is django-oscar@googlegroups.com
+* `django-oscar group`_ - mailing list for questions and announcements
+* `django-oscar-jobs group`_ - mailing list for job offers
 * `Continuous integration homepage`_ on `travis-ci.org`_
 * `Twitter account for news and updates`_
 * #django-oscar on Freenode (community-run IRC channel)
@@ -63,7 +64,8 @@ PyPI status:
 .. _`travis-ci.org`: http://travis-ci.org/
 .. _`Twitter account for news and updates`: https://twitter.com/#!/django_oscar
 .. _`Twitter account of all commits`: https://twitter.com/#!/oscar_django
-.. _`Google Group`: https://groups.google.com/forum/?fromgroups#!forum/django-oscar
+.. _`django-oscar group`: https://groups.google.com/forum/?fromgroups#!forum/django-oscar
+.. _`django-oscar-jobs group`: https://groups.google.com/forum/?fromgroups#!forum/django-oscar-jobs
 .. _`crate.io page`: https://crate.io/packages/django-oscar/
 .. _`PyPI page`: http://pypi.python.org/pypi/django-oscar/
 .. _`Transifex project`: https://www.transifex.com/projects/p/django-oscar/
@@ -201,7 +203,9 @@ Let us know if you're writing a new one!
 License
 -------
 
-Oscar is released under the permissive `New BSD license`_.
+Oscar is released under the permissive `New BSD license`_ (see summary_).
+
+.. _summary: https://tldrlegal.com/license/bsd-3-clause-license-(revised)
 
 .. _`New BSD license`: https://github.com/tangentlabs/django-oscar/blob/master/LICENSE
 
@@ -255,6 +259,7 @@ Non-Tangent:
 * Garmsby - https://garmsby.co.uk
 * Partecipa Cards - http://www.partecipacards.com
 * Chiyome - https://chiyome.com
+* Bike Parts Market - https://www.bikepartsmarket.com
 
 .. image:: https://github.com/tangentlabs/django-oscar/raw/master/docs/images/screenshots/dolbeau.thumb.png
     :target: http://www.dolbeau.ca
@@ -285,6 +290,9 @@ Non-Tangent:
 
 .. image:: https://github.com/tangentlabs/django-oscar/raw/master/docs/images/screenshots/chiyome.thumb.png
     :target: https://chiyome.com
+
+.. image:: https://github.com/tangentlabs/django-oscar/raw/master/docs/images/screenshots/bpm.thumb.png
+    :target: https://www.bikepartsmarket.com
 
 Many more on the way.  If you use Oscar in production, please let us know.
 

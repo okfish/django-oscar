@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.core.exceptions import (
     ObjectDoesNotExist, MultipleObjectsReturned, PermissionDenied)
 from django.core.urlresolvers import reverse
-from django.db.models import get_model
+from oscar.core.loading import get_model
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views.generic import (ListView, CreateView, UpdateView, DeleteView,
@@ -211,11 +211,15 @@ class WishListAddProduct(View):
         return super(WishListAddProduct, self).dispatch(request)
 
     def get_or_create_wishlist(self, request, *args, **kwargs):
-        wishlists = request.user.wishlists.all()
-        num_wishlists = len(wishlists)
-        if num_wishlists == 0:
-            return request.user.wishlists.create()
-        wishlist = wishlists[0]
+        if 'key' in kwargs:
+            wishlist = get_object_or_404(
+                WishList, key=kwargs['key'], owner=request.user)
+        else:
+            wishlists = request.user.wishlists.all()[:1]
+            if not wishlists:
+                return request.user.wishlists.create()
+            wishlist = wishlists[0]
+
         if not wishlist.is_allowed_to_edit(request.user):
             raise PermissionDenied
         return wishlist

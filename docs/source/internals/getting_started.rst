@@ -60,12 +60,12 @@ database (we use SQLite for simplicity):
             'PASSWORD': '',
             'HOST': '',
             'PORT': '',
+            'ATOMIC_REQUESTS': True,  # Django 1.6+
         }
     }
 
-Then, add ``oscar.apps.basket.middleware.BasketMiddleware`` to
-``MIDDLEWARE_CLASSES``.  It is also recommended to use
-``django.middleware.transaction.TransactionMiddleware`` too
+Note that we recommend using ``ATOMIC_REQUESTS`` to tie transactions to
+requests.
 
 Now set ``TEMPLATE_CONTEXT_PROCESSORS`` to:
 
@@ -107,22 +107,32 @@ and append Oscar's core apps:
         'compressor',
     ] + get_core_apps()
 
-Note that Oscar requires ``django.contrib.flatpages`` which isn't
-included by default.
+    SITE_ID = 1
 
-Next, add ``django.contrib.flatpages.middleware.FlatpageFallbackMiddleware`` to
-your ``MIDDLEWARE_CLASSES`` setting:
+Note that Oscar requires ``django.contrib.flatpages`` which isn't
+included by default. ``flatpages`` also requires ``django.contrib.sites``,
+which won't be enabled by default when using Django 1.6 or upwards.
+More info about installing ``flatpages`` is in the `Django docs`_.
+
+.. _`Django docs`: https://docs.djangoproject.com/en/dev/ref/contrib/flatpages/#installation
+
+Next, add ``oscar.apps.basket.middleware.BasketMiddleware``, 
+``django.contrib.flatpages.middleware.FlatpageFallbackMiddleware`` to
+your ``MIDDLEWARE_CLASSES`` setting. If you're running on Django 1.5, it is
+also recommended to use ``django.middleware.transaction.TransactionMiddleware``:
 
 .. code-block:: django
 
     MIDDLEWARE_CLASSES = (
         ...
+        'oscar.apps.basket.middleware.BasketMiddleware',
+        'django.middleware.transaction.TransactionMiddleware',  # Django 1.5 only
         'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     )
 
-More info about `django-flatpages installation`_ at the django-project website.
+If you're running Django 1.6+, you should enable ``ATOMIC_REQUESTS`` instead
+(see database settings above).
 
-.. _`django-flatpages installation`: https://docs.djangoproject.com/en/dev/ref/contrib/flatpages/#installation
 
 .. tip::
 
@@ -155,11 +165,10 @@ path in ``MEDIA_ROOT`` exists. An example from the Sandbox site:
     MEDIA_ROOT = location("public/media")
     MEDIA_URL = '/media/'
 
-Verify your ``staticfiles`` settings and ensure that files in ``MEDIA_ROOT``
-get served:
+Now verify your ``staticfiles`` `settings`_ and ensure that files in ``MEDIA_ROOT``
+get served.
 
-* `staticfiles in Django 1.3 and 1.4 <https://docs.djangoproject.com/en/1.3/howto/static-files/#serving-other-directories>`_
-* `staticfiles in Django 1.5 <https://docs.djangoproject.com/en/1.5/howto/static-files/#serving-files-uploaded-by-a-user>`_
+_`settings`: https://docs.djangoproject.com/en/1.5/howto/static-files/#serving-files-uploaded-by-a-user
 
 Modify your ``TEMPLATE_DIRS`` to include the main Oscar template directory:
 
@@ -193,7 +202,9 @@ The last addition to the settings file is to import all of Oscar's default setti
 URLs
 ----
 
-Alter your ``frobshop/urls.py`` to include Oscar's URLs:
+Alter your ``frobshop/urls.py`` to include Oscar's URLs. If you have more than
+one language set your Django settings for ``LANGUAGES``, you will also need to
+include Django's i18n URLs:
 
 .. code-block:: django
 
@@ -201,7 +212,8 @@ Alter your ``frobshop/urls.py`` to include Oscar's URLs:
     from oscar.app import application
 
     urlpatterns = patterns('',
-        (r'', include(application.urls))
+        (r'^i18n/', include('django.conf.urls.i18n')),
+        url(r'', include(application.urls))
     )
 
 Database

@@ -1,4 +1,3 @@
-{% load url from future %}
 {% load i18n %}
 {% load thumbnail %}
 {% load currency_filters %}
@@ -73,8 +72,9 @@
                                         </div>
                                         {% for field_errors in form.errors.values %}
                                             {% for error in field_errors %}
-                                                <span class="help-block"><i class="icon-exclamation-sign"></i> {{ error }}</span>
+                                                <span class="error-block"><i class="icon-exclamation-sign"></i> {{ error }}</span>
                                             {% endfor %}
+
                                         {% endfor %}
                                     </p>
                                 </div>
@@ -149,7 +149,7 @@
     {% block emptybasket %}
         <p>
             {% trans "Your basket is empty." %}
-            <a href="{% url 'promotions:home' %}">{% trans "Continue shopping" %}</a>
+            <a href="{{ homepage_url }}">{% trans "Continue shopping" %}</a>
         </p>
     {% endblock %}
 {% endif %}

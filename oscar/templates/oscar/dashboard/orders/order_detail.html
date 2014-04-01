@@ -1,5 +1,4 @@
 {% extends 'dashboard/layout.html' %}
-{% load url from future %}
 {% load i18n %}
 {% load currency_filters %}
 
@@ -425,7 +424,7 @@
                             </tr>
                             <tr>
                                 <th>{% trans "Instructions" %}</th>
-                                <td>{{ order.shipping_address.notes|default:"-" }}</td>
+                                <td>{{ order.shipping_address.notes|default:"-"|linebreaks }}</td>
                             </tr>
                         </tbody>
                     </table>

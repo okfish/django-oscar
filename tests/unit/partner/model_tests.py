@@ -1,6 +1,6 @@
 import six
 from decimal import Decimal as D
-from django.db.models import get_model
+from oscar.core.loading import get_model
 
 from django.test import TestCase
 
@@ -89,14 +89,14 @@ class CustomWrapperTests(TestCase):
 
     def test_wrapper_availability_gets_called(self):
         product = factories.create_product(
-            price=D('10.00'), partner="Acme", num_in_stock=10)
+            price=D('10.00'), partner_name="Acme", num_in_stock=10)
         stockrecord = product.stockrecords.all()[0]
         self.assertEqual(u"Dummy response",
                           six.text_type(stockrecord.availability))
 
     def test_wrapper_dispatch_date_gets_called(self):
         product = factories.create_product(
-            price=D('10.00'), partner="Acme", num_in_stock=10)
+            price=D('10.00'), partner_name="Acme", num_in_stock=10)
         stockrecord = product.stockrecords.all()[0]
         self.assertEqual("Another dummy response",
                           stockrecord.dispatch_date)

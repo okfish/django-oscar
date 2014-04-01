@@ -1,5 +1,4 @@
 {% extends "customer/baseaccountpage.html" %}
-{% load url from future %}
 {% load currency_filters %}
 {% load display_tags %}
 {% load i18n %}
@@ -164,7 +163,7 @@
                     {% endfor %}</p>
             </td>
             <td><p>{{ order.shipping_address.phone_number }}</p></td>
-            <td><p>{{ order.shipping_address.notes }}</p></td>
+            <td><p>{{ order.shipping_address.notes|linebreaks }}</p></td>
         </tr>
     </table>
 {% endblock tabcontent %}

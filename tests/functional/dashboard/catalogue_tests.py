@@ -1,11 +1,10 @@
-from django.db.models import get_model
+from oscar.core.loading import get_model
 from django.core.urlresolvers import reverse
 
 from oscar.test.testcases import WebTestCase, add_permissions
 from oscar.test.factories import create_product, create_stockrecord
 
 from django_dynamic_fixture import G
-from oscar.test.testcases import WebTestCase
 
 Product = get_model('catalogue', 'Product')
 ProductClass = get_model('catalogue', 'ProductClass')
@@ -21,10 +20,9 @@ class TestCatalogueViews(WebTestCase):
     def test_exist(self):
         urls = [reverse('dashboard:catalogue-product-list'),
                 reverse('dashboard:catalogue-category-list'),
-                reverse('dashboard:stock-alert-list'),
-               ]
+                reverse('dashboard:stock-alert-list')]
         for url in urls:
-            self.assertIsOk(self.client.get(url))
+            self.assertIsOk(self.get(url))
 
 
 class TestAStaffUser(WebTestCase):
@@ -38,7 +36,7 @@ class TestAStaffUser(WebTestCase):
         category = G(Category)
         product_class = ProductClass.objects.create(name="Book")
         page = self.get(reverse('dashboard:catalogue-product-create',
-                                args=(product_class.id,)))
+                                args=(product_class.slug,)))
         form = page.form
         form['upc'] = '123456'
         form['title'] = 'new product'
@@ -51,7 +49,7 @@ class TestAStaffUser(WebTestCase):
         category = G(Category)
         product_class = ProductClass.objects.create(name="Book")
         page = self.get(reverse('dashboard:catalogue-product-create',
-                                args=(product_class.id,)))
+                                args=(product_class.slug,)))
         form = page.form
         form['upc'] = '123456'
         form['title'] = 'new product'
@@ -148,7 +146,7 @@ class TestAStaffUser(WebTestCase):
 
     def test_can_list_her_products(self):
         product1 = create_product(partner_users=[self.user, ])
-        product2 = create_product(partner="sneaky", partner_users=[])
+        product2 = create_product(partner_name="sneaky", partner_users=[])
         page = self.get(reverse('dashboard:catalogue-product-list'))
         assert product1 in page.context['object_list']
         assert product2 in page.context['object_list']
@@ -165,8 +163,8 @@ class TestANonStaffUser(TestAStaffUser):
         self.partner.users.add(self.user)
 
     def test_can_list_her_products(self):
-        product1 = create_product(partner="A", partner_users=[self.user, ])
-        product2 = create_product(partner="B", partner_users=[])
+        product1 = create_product(partner_name="A", partner_users=[self.user, ])
+        product2 = create_product(partner_name="B", partner_users=[])
         page = self.get(reverse('dashboard:catalogue-product-list'))
         assert product1 in page.context['object_list']
         assert product2 not in page.context['object_list']

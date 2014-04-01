@@ -1,5 +1,4 @@
 {% extends "layout.html" %}
-{% load url from future %}
 {% load currency_filters %}
 {% load i18n %}
 {% load reviews_tags %}
@@ -39,7 +38,7 @@
             {% if address.notes %}
                 <tr>
                     <th>{% trans 'Notes' %}</th>
-                    <td>{{ address.notes }}</td>
+                    <td>{{ address.notes|linebreaks }}</td>
                 </tr>
             {% endif %} 
         </table>

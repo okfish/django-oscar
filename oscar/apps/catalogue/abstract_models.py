@@ -1,25 +1,27 @@
-from itertools import chain
-from datetime import datetime, date
-import logging
-from django.utils.html import strip_tags
-from django.utils.safestring import mark_safe
 import os
 import six
 import warnings
+from itertools import chain
+from datetime import datetime, date
+import logging
 
+from django.utils.html import strip_tags
+from django.utils.safestring import mark_safe
 from django.conf import settings
 from django.contrib.staticfiles.finders import find
 from django.core.exceptions import ValidationError, ImproperlyConfigured
 from django.core.files.base import File
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Sum, Count, get_model
+from django.db.models import Sum, Count
 from django.utils.translation import ugettext_lazy as _
 from django.utils.functional import cached_property
+
 from treebeard.mp_tree import MP_Node
 
 from oscar.core.utils import slugify
-from oscar.core.loading import get_classes
+from oscar.core.loading import get_classes, get_model
+from oscar.models.fields import NullCharField, AutoSlugField
 
 ProductManager, BrowsableProductManager = get_classes(
     'catalogue.managers', ['ProductManager', 'BrowsableProductManager'])
@@ -36,7 +38,8 @@ class AbstractProductClass(models.Model):
     Not necessarily equivalent to top-level categories but usually will be.
     """
     name = models.CharField(_('Name'), max_length=128)
-    slug = models.SlugField(_('Slug'), max_length=128, unique=True)
+    slug = AutoSlugField(_('Slug'), max_length=128, unique=True,
+                         populate_from='name')
 
     #: Some product type don't require shipping (eg digital products) - we use
     #: this field to take some shortcuts in the checkout.
@@ -59,23 +62,19 @@ class AbstractProductClass(models.Model):
         verbose_name = _("Product Class")
         verbose_name_plural = _("Product Classes")
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        return super(AbstractProductClass, self).save(*args, **kwargs)
-
     def __unicode__(self):
         return self.name
 
 
 class AbstractCategory(MP_Node):
     """
-    A product category.
+    A product category. Merely used for navigational purposes; has no
+    effects on business logic.
 
     Uses django-treebeard.
     """
     name = models.CharField(_('Name'), max_length=255, db_index=True)
-    description = models.TextField(_('Description'), blank=True, null=True)
+    description = models.TextField(_('Description'), blank=True)
     image = models.ImageField(_('Image'), upload_to='categories', blank=True,
                               null=True, max_length=255)
     slug = models.SlugField(_('Slug'), max_length=255, db_index=True,
@@ -174,83 +173,20 @@ class AbstractCategory(MP_Node):
 
 class AbstractProductCategory(models.Model):
     """
-    Joining model between products and categories.
+    Joining model between products and categories. Exists to allow customising.
     """
     product = models.ForeignKey('catalogue.Product', verbose_name=_("Product"))
     category = models.ForeignKey('catalogue.Category',
                                  verbose_name=_("Category"))
-    is_canonical = models.BooleanField(_('Is Cannonical'), default=False,
-                                       db_index=True)
 
     class Meta:
         abstract = True
-        ordering = ['-is_canonical']
+        ordering = ['product', 'category']
         verbose_name = _('Product Category')
         verbose_name_plural = _('Product Categories')
 
     def __unicode__(self):
         return u"<productcategory for product '%s'>" % self.product
-
-
-class AbstractContributorRole(models.Model):
-    """
-    A role that may be performed by a contributor to a product, eg Author,
-    Actor, Director.
-    """
-    name = models.CharField(_('Name'), max_length=50)
-    name_plural = models.CharField(_('Name Plural'), max_length=50)
-    slug = models.SlugField()
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        abstract = True
-        verbose_name = _('Contributor Role')
-        verbose_name_plural = _('Contributor Roles')
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super(AbstractContributorRole, self).save(*args, **kwargs)
-
-
-class AbstractContributor(models.Model):
-    """
-    Represents a person or business that has contributed to a product in some
-    way. eg an author.
-    """
-    name = models.CharField(_("Name"), max_length=255)
-    slug = models.SlugField(_("Slug"), max_length=255, unique=False)
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        abstract = True
-        verbose_name = _('Contributor')
-        verbose_name_plural = _('Contributors')
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super(AbstractContributor, self).save(*args, **kwargs)
-
-
-class AbstractProductContributor(models.Model):
-    product = models.ForeignKey('catalogue.Product', verbose_name=_("Product"))
-    contributor = models.ForeignKey('catalogue.Contributor',
-                                    verbose_name=_("Contributor"))
-    role = models.ForeignKey('catalogue.ContributorRole', blank=True,
-                             null=True, verbose_name=_("Contributor Role"))
-
-    def __unicode__(self):
-        return '%s <- %s - %s' % (self.product, self.role, self.contributor)
-
-    class Meta:
-        abstract = True
-        verbose_name = _('Product Contributor')
-        verbose_name_plural = _('Product Contributors')
 
 
 class AbstractProduct(models.Model):
@@ -264,8 +200,8 @@ class AbstractProduct(models.Model):
     For example, a canonical product would have a title like "Green fleece"
     while its children would be "Green fleece - size L".
     """
-    #: Universal product code
-    upc = models.CharField(
+
+    upc = NullCharField(
         _("UPC"), max_length=64, blank=True, null=True, unique=True,
         help_text=_("Universal Product Code (UPC) is an identifier for "
                     "a product which is not specific to a particular "
@@ -282,18 +218,16 @@ class AbstractProduct(models.Model):
                     "product)."))
 
     # Title is mandatory for canonical products but optional for child products
-    title = models.CharField(_('Title'), max_length=255, blank=True, null=True)
+    title = models.CharField(_('Title'), max_length=255, blank=True)
     slug = models.SlugField(_('Slug'), max_length=255, unique=False)
-    description = models.TextField(_('Description'), blank=True, null=True)
+    description = models.TextField(_('Description'), blank=True)
 
-    #: Use this field to indicate if the product is inactive or awaiting
-    #: approval
-    status = models.CharField(_('Status'), max_length=128, blank=True,
-                              null=True, db_index=True)
+    #: "Type" of product.
+    #: None for Product variants, they inherit their parent's product class
     product_class = models.ForeignKey(
-        'catalogue.ProductClass', verbose_name=_('Product Class'), null=True,
-        related_name="products",
-        help_text=_("""Choose what type of product this is"""))
+        'catalogue.ProductClass', null=True, on_delete=models.PROTECT,
+        verbose_name=_('Product Type'), related_name="products",
+        help_text=_("Choose what type of product this is"))
     attributes = models.ManyToManyField(
         'catalogue.ProductAttribute',
         through='ProductAttributeValue',
@@ -320,6 +254,7 @@ class AbstractProduct(models.Model):
 
     # Product score - used by analytics app
     score = models.FloatField(_('Score'), default=0.00, db_index=True)
+
     # Denormalised product rating - used by reviews app.
     # Product has no ratings if rating is None
     rating = models.FloatField(_('Rating'), null=True, editable=False)
@@ -338,7 +273,7 @@ class AbstractProduct(models.Model):
     #: discount some types of product (e.g. ebooks) and this field helps
     #: merchants from avoiding discounting such products
     is_discountable = models.BooleanField(
-        _("Is discountable?"), default=True, help_text=(
+        _("Is discountable?"), default=True, help_text=_(
             "This flag indicates if this product can be used in an offer "
             "or not"))
 
@@ -558,13 +493,23 @@ class AbstractProduct(models.Model):
         return MissingProductImage()
 
     def primary_image(self):
+        """
+        Returns the primary image for a product. Usually used when one can
+        only display one product image, e.g. in a list of products.
+        """
         images = self.images.all()
+        ordering = self.images.model.Meta.ordering
+        if not ordering or ordering[0] != 'display_order':
+            # Only apply order_by() if a custom model doesn't use default
+            # ordering. Applying order_by() busts the prefetch cache of
+            # the ProductManager
+            images = images.order_by('display_order')
         try:
             return images[0]
         except IndexError:
             # We return a dict with fields that mirror the key properties of
             # the ProductImage class so this missing image can be used
-            # interchangably in templates.  Strategy pattern ftw!
+            # interchangeably in templates.  Strategy pattern ftw!
             return {
                 'original': self.get_missing_image(),
                 'caption': '',
@@ -705,13 +650,14 @@ class AbstractProductAttribute(models.Model):
     """
     product_class = models.ForeignKey(
         'catalogue.ProductClass', related_name='attributes', blank=True,
-        null=True, verbose_name=_("Product Class"))
+        null=True, verbose_name=_("Product Type"))
     name = models.CharField(_('Name'), max_length=128)
     code = models.SlugField(
         _('Code'), max_length=128,
         validators=[RegexValidator(
             regex=r'^[a-zA-Z_][0-9a-zA-Z_]*$',
-            message=_("Code must match ^[a-zA-Z_][0-9a-zA-Z_]*$"))])
+            message=_("Code can only contain the letters a-z, A-Z, digits "
+                      "and underscores, and can't start with a digit"))])
 
     TYPE_CHOICES = (
         ("text", _("Text")),
@@ -1061,10 +1007,11 @@ class AbstractOption(models.Model):
 
     This is not the same as an 'attribute' as options do not have a fixed value
     for a particular item.  Instead, option need to be specified by a customer
-    when add the item to their basket.
+    when they add the item to their basket.
     """
     name = models.CharField(_("Name"), max_length=128)
-    code = models.SlugField(_("Code"), max_length=128, unique=True)
+    code = AutoSlugField(_("Code"), max_length=128, unique=True,
+                         populate_from='name')
 
     REQUIRED, OPTIONAL = ('Required', 'Optional')
     TYPE_CHOICES = (
@@ -1081,11 +1028,6 @@ class AbstractOption(models.Model):
 
     def __unicode__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        if not self.code:
-            self.code = slugify(self.name)
-        super(AbstractOption, self).save(*args, **kwargs)
 
     @property
     def is_required(self):
@@ -1138,8 +1080,7 @@ class AbstractProductImage(models.Model):
         'catalogue.Product', related_name='images', verbose_name=_("Product"))
     original = models.ImageField(
         _("Original"), upload_to=settings.OSCAR_IMAGE_FOLDER, max_length=255)
-    caption = models.CharField(
-        _("Caption"), max_length=200, blank=True, null=True)
+    caption = models.CharField(_("Caption"), max_length=200, blank=True)
 
     #: Use display_order to determine which is the "primary" image
     display_order = models.PositiveIntegerField(
@@ -1151,6 +1092,8 @@ class AbstractProductImage(models.Model):
     class Meta:
         abstract = True
         unique_together = ("product", "display_order")
+        # Any custom models should ensure that this ordering is unchanged, or
+        # your query count will explode. See AbstractProduct.primary_image.
         ordering = ["display_order"]
         verbose_name = _('Product Image')
         verbose_name_plural = _('Product Images')

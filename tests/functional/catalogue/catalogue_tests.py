@@ -5,7 +5,7 @@ from oscar.apps.catalogue.models import Category
 from oscar.test.testcases import WebTestCase
 
 from oscar.test.factories import create_product
-from oscar.apps.catalogue.views import ProductListView
+from oscar.apps.catalogue.views import ProductCategoryView
 
 
 class TestProductDetailView(WebTestCase):
@@ -55,7 +55,7 @@ class TestProductListView(WebTestCase):
         self.assertContains(page, "Unavailable")
 
     def test_shows_pagination_navigation_for_multiple_pages(self):
-        per_page = ProductListView.paginate_by
+        per_page = ProductCategoryView.paginate_by
         title = u"Product #%d"
         for idx in range(0, int(1.5 * per_page)):
             create_product(title=title % idx)
@@ -83,3 +83,13 @@ class TestProductCategoryView(WebTestCase):
         response = self.app.get(wrong_url)
         self.assertEqual(http_client.MOVED_PERMANENTLY, response.status_code)
         self.assertTrue(self.category.get_absolute_url() in response.location)
+
+    def test_can_chop_off_last_part_of_url(self):
+        child_category = self.category.add_child(name='Cool products')
+        full_url = child_category.get_absolute_url()
+        chopped_url = full_url.rsplit('/', 2)[0]
+        parent_url = self.category.get_absolute_url()
+        response = self.app.get(chopped_url).follow()  # fails if no redirect
+        self.assertTrue(response.url.endswith(parent_url))
+
+
