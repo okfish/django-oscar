@@ -9,14 +9,12 @@ from django.contrib.sites.models import get_current_site
 from django.core import validators
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
-from oscar.core.loading import get_model
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import pgettext_lazy
 
-from oscar.core.loading import get_profile_class, get_class
-from oscar.core.compat import get_user_model
+from oscar.core.loading import get_profile_class, get_class, get_model
+from oscar.core.compat import get_user_model, existing_user_fields, urlparse
 from oscar.apps.customer.utils import get_password_reset_url, normalise_email
-from oscar.core.compat import urlparse
 
 
 Dispatcher = get_class('customer.utils', 'Dispatcher')
@@ -326,9 +324,7 @@ class UserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        exclude = ('username', 'password', 'is_staff', 'is_superuser',
-                   'is_active', 'last_login', 'date_joined',
-                   'user_permissions', 'groups')
+        fields = existing_user_fields(['first_name', 'last_name', 'email'])
 
 
 Profile = get_profile_class()

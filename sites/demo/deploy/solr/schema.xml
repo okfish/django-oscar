@@ -153,7 +153,7 @@
     <field name="date_updated" type="date" indexed="true" stored="true" multiValued="false" />
     <field name="text" type="edge_ngram" indexed="true" stored="true" multiValued="false" />
     <field name="suggestions" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="price" type="tdouble" indexed="true" stored="true" multiValued="false" />
+    <field name="price" type="tdouble" indexed="true" stored="true" multiValued="false" sortMissingLast="true" />
     <field name="price_exact" type="tdouble" indexed="true" stored="true" multiValued="false" />
     <field name="num_in_stock" type="long" indexed="true" stored="true" multiValued="false" />
     <field name="publisher_exact" type="string" indexed="true" stored="true" multiValued="false" />
@@ -181,4 +181,3 @@
   <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
   <solrQueryParser defaultOperator="AND"/>
 </schema>
-

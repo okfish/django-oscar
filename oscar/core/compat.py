@@ -37,9 +37,35 @@ except ValueError:
     raise ImproperlyConfigured("AUTH_USER_MODEL must be of the form"
                                " 'app_label.model_name'")
 
-#
+
+def existing_user_fields(fields):
+    """
+    Starting with Django 1.6, the User model can be overridden  and it is no
+    longer safe to assume the User model has certain fields. This helper
+    function assists in writing portable forms Meta.fields definitions
+    when those contain fields on the User model
+
+    Usage:
+    class UserForm(forms.Form):
+        ...
+        class Meta:
+            # won't break if first_name is not defined on User model
+            fields = existing_user_fields(['first_name', 'last_name'])
+    """
+    user_fields = get_user_model()._meta.fields
+    user_field_names = [field.name for field in user_fields]
+    return list(set(fields) & set(user_field_names))
+
+
 # Python3 compatibility layer
-#
+
+
+# Make backwards-compatible atomic decorator available
+try:
+    from django.db.transaction import atomic as atomic_compat
+except ImportError:
+    from django.db.transaction import commit_on_success as atomic_compat
+atomic_compat = atomic_compat
 
 try:
     import urlparse as _urlparse
