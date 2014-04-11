@@ -1,9 +1,9 @@
 language: python
 
 python:
-  - '2.6'
   - '2.7'
   - '3.3'
+  - '3.4'
 
 env:
   global:
@@ -16,6 +16,7 @@ env:
 matrix:
   allow_failures:
     - python: '3.3'
+    - python: '3.4'
 
 install:
   - easy_install Django==$DJANGO_VERSION
@@ -23,6 +24,8 @@ install:
 before_script:
   - mysql -e 'create database oscar_vagrant;'
   - psql -c 'create database oscar_vagrant;' -U postgres
+  - psql -c 'create database oscar_demo;' -U postgres
+  - psql -c 'CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology;' -U postgres -d oscar_demo
 
 script:
   - make travis
