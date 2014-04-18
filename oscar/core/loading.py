@@ -1,11 +1,52 @@
 import sys
 import traceback
+from importlib import import_module
 
 from django.conf import settings
 from django.db.models import get_model as django_get_model
+from django.utils import six as django_six
 
 from oscar.core.exceptions import (ModuleNotFoundError, ClassNotFoundError,
                                    AppNotFoundError)
+
+
+def import_string(dotted_path):
+    """
+    Import a dotted module path and return the attribute/class designated by
+    the last name in the path. Raise ImportError if the import failed.
+
+    This is backported from unreleased Django 1.7 at
+    47927eb786f432cb069f0b00fd810c465a78fd71. Can be removed once we don't
+    support Django versions below 1.7.
+    """
+    try:
+        module_path, class_name = dotted_path.rsplit('.', 1)
+    except ValueError:
+        msg = "%s doesn't look like a module path" % dotted_path
+        django_six.reraise(ImportError, ImportError(msg), sys.exc_info()[2])
+
+    module = import_module(module_path)
+
+    try:
+        return getattr(module, class_name)
+    except AttributeError:
+        msg = 'Module "%s" does not define a "%s" attribute/class' % (
+            dotted_path, class_name)
+        django_six.reraise(ImportError, ImportError(msg), sys.exc_info()[2])
+    try:
+        module_path, class_name = dotted_path.rsplit('.', 1)
+    except ValueError:
+        msg = "%s doesn't look like a module path" % dotted_path
+        django_six.reraise(ImportError, ImportError(msg), sys.exc_info()[2])
+
+    module = __import__(module_path, fromlist=[class_name])
+
+    try:
+        return getattr(module, class_name)
+    except AttributeError:
+        msg = 'Module "%s" does not define a "%s" attribute/class' % (
+            dotted_path, class_name)
+        django_six.reraise(ImportError, ImportError(msg), sys.exc_info()[2])
 
 
 def get_class(module_label, classname):
@@ -70,13 +111,25 @@ def get_classes(module_label, classnames):
             ``ImportError``, it is re-raised
     """
 
-    # e.g. split 'dashboard.catalogue.forms' in 'dashboard.catalogue', 'forms'
-    package, module = module_label.rsplit('.', 1)
-
     # import from Oscar package (should succeed in most cases)
     # e.g. 'oscar.apps.dashboard.catalogue.forms'
     oscar_module_label = "oscar.apps.%s" % module_label
     oscar_module = _import_module(oscar_module_label, classnames)
+
+    # Split module_label into the section that we expect to find in
+    # INSTALLED_APPS (package) and the rest (module)
+    # e.g. split 'dashboard.catalogue.forms' in 'dashboard.catalogue', 'forms'
+    # It is assumed that any imported module is only ever one level below
+    # package, e.g. 'dashboard.catalogue.forms.widgets' will break
+    if '.' in module_label:
+        package, module = module_label.rsplit('.', 1)
+    else:
+        # Importing from top-level modules is not supported, e.g.
+        # get_class('shipping', 'Scale'). That should be easy to fix,
+        # but @maikhoepfel had a stab and could not get it working reliably.
+        # Overridable classes in a __init__.py might not be a good idea anyway.
+        raise ValueError(
+            "Importing from top-level modules is not supported")
 
     # returns e.g. 'oscar.apps.dashboard.catalogue',
     # 'yourproject.apps.dashboard.catalogue' or 'dashboard.catalogue'
