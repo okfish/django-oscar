@@ -89,9 +89,11 @@ if __name__ == '__main__':
         # Note: The context manager is not thread safe. Behaviour with multiple
         # threads is undefined.
         warnings.filterwarnings('error', category=DeprecationWarning)
+        warnings.filterwarnings('error', category=RuntimeWarning)
         warnings.filterwarnings('ignore',
                                 r'django.utils.simplejson is deprecated.*',
-                                DeprecationWarning, r'sorl\.thumbnail\.helpers')
+                                DeprecationWarning,
+                                r'(sorl\.thumbnail\.helpers|compressor\.cache)')
         warnings.filterwarnings('ignore',
                                 r'cgi.parse_qsl is deprecated.*',
                                 DeprecationWarning, r'webtest\.app')

@@ -29,7 +29,7 @@ Further reading:
 * `django-oscar-jobs group`_ - mailing list for job offers
 * `Continuous integration homepage`_ on `travis-ci.org`_
 * `Twitter account for news and updates`_
-* #django-oscar on Freenode (community-run IRC channel)
+* #django-oscar on Freenode (community-run IRC channel) with `public logs`_
 * `PyPI page`_
 * `Transifex project`_ - translating Oscar made easy
 
@@ -62,7 +62,7 @@ PyPI status:
 .. _`Continuous integration homepage`: http://travis-ci.org/#!/tangentlabs/django-oscar
 .. _`travis-ci.org`: http://travis-ci.org/
 .. _`Twitter account for news and updates`: https://twitter.com/#!/django_oscar
-.. _`Twitter account of all commits`: https://twitter.com/#!/oscar_django
+.. _`public logs`: https://botbot.me/freenode/django-oscar/
 .. _`django-oscar group`: https://groups.google.com/forum/?fromgroups#!forum/django-oscar
 .. _`django-oscar-jobs group`: https://groups.google.com/forum/?fromgroups#!forum/django-oscar-jobs
 .. _`PyPI page`: https://pypi.python.org/pypi/django-oscar/
@@ -152,30 +152,21 @@ The following extensions are stable and ready for use:
 .. _django-oscar-paypal: https://github.com/tangentlabs/django-oscar-paypal
 .. _`Express Checkout`: https://www.paypal.com/uk/cgi-bin/webscr?cmd=_additional-payment-ref-impl1
 .. _`PayFlow Pro`: https://merchant.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=merchant/payment_gateway
-.. _django-oscar-gocardless: https://github.com/tangentlabs/django-oscar-gocardless
-.. _GoCardless: https://gocardless.com/
-.. _django-oscar-jirafe: https://github.com/tangentlabs/django-oscar-jirafe
-.. _Jirafe: https://jirafe.com/
 .. _django-oscar-accounts: https://github.com/tangentlabs/django-oscar-accounts
 .. _django-oscar-easyrec: https://github.com/tangentlabs/django-oscar-easyrec
 .. _EasyRec: http://easyrec.org/
 
 The following extensions are in development by Tangent:
 
-* django-oscar-stripe_ - Integration with the Stripe_ payment gateway
-* django-oscar-gocardless_ - Integration with the GoCardless_ payment gateway
-* django-oscar-jirafe_ - Integration with the Jirafe_ analytics package
 * django-oscar-parachute_ - Import scripts for migrating away from non-Oscar
   platforms.
 * django-oscar-eway_ - Integration with the eWay_ payment gateway.
 * django-oscar-approval_ - Approval workflow for authorising new
   orders/products.
 
-.. _django-oscar-stripe: https://github.com/tangentlabs/django-oscar-stripe
 .. _django-oscar-stores: https://github.com/tangentlabs/django-oscar-stores
 .. _django-oscar-parachute: https://github.com/tangentlabs/django-oscar-parachute
 .. _django-oscar-approval: https://github.com/tangentlabs/django-oscar-approval
-.. _Stripe: https://stripe.com
 .. _django-oscar-eway: https://github.com/tangentlabs/django-oscar-eway
 .. _eWay: https://www.eway.com.au
 

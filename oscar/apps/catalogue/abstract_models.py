@@ -311,7 +311,7 @@ class AbstractProduct(models.Model):
         # Allow attribute validation to be skipped.  This is required when
         # saving a parent product which belongs to a product class with
         # required attributes.
-        if kwargs.pop('validate_attributes', True) and not self.is_group:
+        if not self.is_group and kwargs.pop('validate_attributes', True):
             self.attr.validate_attributes()
 
         # Save product
@@ -560,6 +560,11 @@ class AbstractProduct(models.Model):
         else:
             return False
 
+    @cached_property
+    def num_approved_reviews(self):
+        return self.reviews.filter(
+            status=self.reviews.model.APPROVED).count()
+
 
 class ProductRecommendation(models.Model):
     """
@@ -655,9 +660,9 @@ class AbstractProductAttribute(models.Model):
     code = models.SlugField(
         _('Code'), max_length=128,
         validators=[RegexValidator(
-            regex=r'^[a-zA-Z_][0-9a-zA-Z_]*$',
-            message=_("Code can only contain the letters a-z, A-Z, digits "
-                      "and underscores, and can't start with a digit"))])
+            regex=r'^[a-zA-Z\-_][0-9a-zA-Z\-_]*$',
+            message=_("Code can only contain the letters a-z, A-Z, digits, "
+                      "minus and underscores, and can't start with a digit"))])
 
     TYPE_CHOICES = (
         ("text", _("Text")),
