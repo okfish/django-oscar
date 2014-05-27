@@ -38,9 +38,6 @@ OSCAR_PRODUCTS_PER_PAGE = 20
 # Checkout
 OSCAR_ALLOW_ANON_CHECKOUT = False
 
-# Partners
-OSCAR_PARTNER_WRAPPERS = {}
-
 # Promotions
 COUNTDOWN, LIST, SINGLE_PRODUCT, TABBED_BLOCK = (
     'Countdown', 'List', 'SingleProduct', 'TabbedBlock')
@@ -75,6 +72,11 @@ OSCAR_FROM_EMAIL = 'oscar@example.com'
 
 # Offers
 OSCAR_OFFER_BLACKLIST_PRODUCT = None
+
+# Slug handling
+OSCAR_SLUG_FUNCTION = 'oscar.core.utils.default_slugifier'
+OSCAR_SLUG_MAP = {}
+OSCAR_SLUG_BLACKLIST = []
 
 # Cookies
 OSCAR_COOKIES_DELETE_ON_LOGOUT = ['oscar_recently_viewed_products', ]

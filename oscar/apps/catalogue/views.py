@@ -1,15 +1,16 @@
-import warnings
+from django.utils.http import urlquote
 from django.conf import settings
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView
-from oscar.core.loading import get_model
 from django.utils.translation import ugettext_lazy as _
 
-from haystack.query import SearchQuerySet
-
-from oscar.core.loading import get_class
+from oscar.core.loading import get_class, get_model
 from oscar.apps.catalogue.signals import product_viewed
+
+# Faceted category view related imports
+import warnings
+from haystack.query import SearchQuerySet
 from oscar.apps.catalogue.mixins import FacetedSearchMixin
 from oscar.apps.catalogue.forms import CategoryFacetForm
 from oscar.apps.search import facets
@@ -39,9 +40,9 @@ class ProductDetailView(DetailView):
                 return HttpResponsePermanentRedirect(
                     product.parent.get_absolute_url())
 
-            correct_path = product.get_absolute_url()
-            if correct_path != request.path:
-                return HttpResponsePermanentRedirect(correct_path)
+            expected_path = product.get_absolute_url()
+            if expected_path != urlquote(request.path):
+                return HttpResponsePermanentRedirect(expected_path)
 
         response = super(ProductDetailView, self).get(request, **kwargs)
         self.send_signal(request, response, product)
@@ -104,17 +105,6 @@ class ProductDetailView(DetailView):
             '%s/detail.html' % (self.template_folder)]
 
 
-def get_product_base_queryset():
-    """
-    Deprecated. Kept only for backwards compatibility.
-    Product.browsable.base_queryset() should be used instead.
-    """
-    warnings.warn(("`get_product_base_queryset` is deprecated in favour of"
-                   "`base_queryset` on Product's managers. It will be removed"
-                   "in Oscar 0.7."), DeprecationWarning)
-    return Product.browsable.base_queryset()
-
-
 class ProductCategoryView(ListView):
     """
     Browse products in a given category
@@ -142,11 +132,11 @@ class ProductCategoryView(ListView):
     def get(self, request, *args, **kwargs):
         self.get_object()
         if self.enforce_paths and self.category is not None:
-            # Categories are fetched by primary key to allow slug changes
-            # If the slug has indeed changed, issue a redirect
-            correct_path = self.category.get_absolute_url()
-            if correct_path != request.path:
-                return HttpResponsePermanentRedirect(correct_path)
+            # Categories are fetched by primary key to allow slug changes.
+            # If the slug has indeed changed, issue a redirect.
+            expected_path = self.category.get_absolute_url()
+            if expected_path != urlquote(request.path):
+                return HttpResponsePermanentRedirect(expected_path)
         return super(ProductCategoryView, self).get(request, *args, **kwargs)
 
     def get_categories(self):

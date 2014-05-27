@@ -5,39 +5,43 @@ How to handle US taxes
 When trading in the US, taxes aren't known until the customer's shipping
 address has been entered.  This scenario requires two changes from core Oscar.
 
-First, the site strategy should return all prices without tax when the customer
-is based in the US.  See 
-:doc:`the documentation on strategies </topics/prices_and_availability>`
-for guidance on how to replace strategies.
+Ensure your site strategy returns prices without taxes applied
+--------------------------------------------------------------
 
-Second, the 
-:class:`~oscar.apps.checkout.views.PaymentDetailsView`
-checkout view should be
-overridden to calculate taxes on the basket within the 
-:func:`~oscar.apps.checkout.views.PaymentDetailsView.build_submission`
-method.
+First, the site strategy should return all prices without tax when the customer
+is based in the US.  Oscar provides a :class:`~oscar.apps.partner.strategy.US`
+strategy class that uses the :class:`~oscar.apps.partner.strategy.DeferredTax`
+mixin to indicate that prices don't include taxes.
+
+See :doc:`the documentation on strategies </topics/prices_and_availability>`
+for further guidance on how to replace strategies.
+
+Adjust checkout views to apply taxes once they are known
+--------------------------------------------------------
+
+Second, the :class:`~oscar.apps.checkout.session.CheckoutSessionMixin`
+should be overridden within your project to apply taxes
+to the submission.
 
 .. code-block:: python
 
-    from oscar.apps.checkout import views
+    from oscar.apps.checkout import session
 
     from . import tax
 
-    # Override core Oscar view class
-    class PaymentDetailsView(views.PaymentDetailsView):
-        
-        # Override build_submission to ensure taxes are applied before
-        # attempting to place an order
+    class CheckoutSessionMixin(session.CheckoutSessionMixin):
+
         def build_submission(self, **kwargs):
-            submission = super(PaymentDetailsView, self).build_submission(**kwargs)
+            submission = super(CheckoutSessionMixin, self).build_submission(
+                **kwargs)
 
-            # Apply taxes (in place)
-            tax.apply_to_submission(submission)
+            if submission['shipping_address']:
+                tax.apply_to(submission)
 
-            # Recalculate order total to ensure we have a tax-inclusive total
-            submission['order_total'] = self.get_order_totals(
-                submission['basket'],
-                shipping_method=submission['shipping_method'])
+                # Recalculate order total to ensure we have a tax-inclusive total
+                submission['order_total'] = self.get_order_totals(
+                    submission['basket'],
+                    shipping_method=submission['shipping_method'])
 
             return submission
 
@@ -47,7 +51,7 @@ An example implementation of the ``tax.py`` module is:
 
     from decimal import Decimal as D
 
-    def apply_tax_to_submission(submission):
+    def apply_to(submission):
         # Assume 7% sales tax on sales to New Jersey  You could instead use an
         # external service like Avalara to look up the appropriates taxes.
         STATE_TAX_RATES = {
@@ -60,7 +64,7 @@ An example implementation of the ``tax.py`` module is:
             line_tax = calculate_tax(
                 line.line_price_excl_tax_incl_discounts, rate)
             unit_tax = (line_tax / line.quantity).quantize(D('0.01'))
-            line.stockinfo.price.tax = unit_tax
+            line.purchase_info = unit_tax
 
         # Note, we change the submission in place - we don't need to
         # return anything from this function
@@ -71,3 +75,8 @@ An example implementation of the ``tax.py`` module is:
         def calculate_tax(price, rate):
             tax = price * rate
             return tax.quantize(D('0.01'))
+
+.. tip::
+
+   Oscar's repository contains a sample Oscar site customised for the US.  See
+   :ref:`us_site` for more information.

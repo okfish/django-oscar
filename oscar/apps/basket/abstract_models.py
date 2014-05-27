@@ -270,6 +270,10 @@ class AbstractBasket(models.Model):
         basket.date_merged = now()
         basket._lines = None
         basket.save()
+        # Ensure all vouchers are moved to the new basket
+        for voucher in basket.vouchers.all():
+            basket.vouchers.remove(voucher)
+            self.vouchers.add(voucher)
     merge.alters_data = True
 
     def freeze(self):
@@ -547,12 +551,9 @@ class AbstractLine(models.Model):
         'catalogue.Product', related_name='basket_lines',
         verbose_name=_("Product"))
 
-    # We store the stockrecord that should be used to fulfil this line.  This
-    # shouldn't really be NULLable but we need to keep it so for backwards
-    # compatibility.
+    # We store the stockrecord that should be used to fulfil this line.
     stockrecord = models.ForeignKey(
-        'partner.StockRecord', related_name='basket_lines',
-        null=True, blank=True)
+        'partner.StockRecord', related_name='basket_lines')
 
     quantity = models.PositiveIntegerField(_('Quantity'), default=1)
 
