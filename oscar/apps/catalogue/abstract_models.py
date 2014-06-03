@@ -218,7 +218,7 @@ class AbstractProduct(models.Model):
                     "product)."))
 
     # Title is mandatory for canonical products but optional for child products
-    title = models.CharField(_('Title'), max_length=255, blank=True)
+    title = models.CharField(_('Product title'), max_length=255, blank=True)
     slug = models.SlugField(_('Slug'), max_length=255, unique=False)
     description = models.TextField(_('Description'), blank=True)
 
@@ -294,22 +294,19 @@ class AbstractProduct(models.Model):
         return reverse('catalogue:detail',
                        kwargs={'product_slug': self.slug, 'pk': self.id})
 
-    def save(self, *args, **kwargs):
+    def clean(self):
         if self.is_top_level and not self.title:
             raise ValidationError(_("Canonical products must have a title"))
-        if not self.slug:
-            self.slug = slugify(self.get_title())
-
-        # Allow attribute validation to be skipped.  This is required when
-        # saving a parent product which belongs to a product class with
-        # required attributes.
-        if not self.is_group and kwargs.pop('validate_attributes', True):
+        if self.is_top_level and not self.product_class:
+            raise ValidationError(
+                _("Canonical products must have a product class"))
+        if not self.is_group:
             self.attr.validate_attributes()
 
-        # Save product
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.get_title())
         super(AbstractProduct, self).save(*args, **kwargs)
-
-        # Finally, save attributes
         self.attr.save()
 
     # Properties
@@ -403,7 +400,7 @@ class AbstractProduct(models.Model):
         if not title and self.parent_id:
             title = self.parent.title
         return title
-    get_title.short_description = _("Title")
+    get_title.short_description = _("Product title")
 
     def get_product_class(self):
         """
