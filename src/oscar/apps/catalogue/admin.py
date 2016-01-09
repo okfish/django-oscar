@@ -86,6 +86,7 @@ class AttributeOptionGroupAdmin(admin.ModelAdmin):
 
 class CategoryAdmin(TreeAdmin):
     form = movenodeform_factory(Category)
+    list_display = ('name', 'slug')
 
 
 admin.site.register(ProductClass, ProductClassAdmin)

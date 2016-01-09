@@ -22,7 +22,9 @@ Table of contents:
 Compatibility
 -------------
 
-Oscar 1.2 is compatible with... 
+Oscar 1.2 is compatible with Django 1.7, 1.8 and 1.9 as well as Python 2.7,
+3.3, 3.4 and 3.5.
+
 
 
 .. _new_in_1.2:
@@ -88,3 +90,10 @@ https://github.com/django-oscar/django-oscar/issues/1930
 
 https://github.com/django-oscar/django-oscar/issues/1925
 https://github.com/django-oscar/django-oscar/pull/1926
+
+Dependency changes
+------------------
+
+* The following packages are updated:
+    - `django-treebeard >= 4.0` (Django 1.9 support)
+    - `sorl.thumbnail >= 12.4a1` (Django 1.9 support)
