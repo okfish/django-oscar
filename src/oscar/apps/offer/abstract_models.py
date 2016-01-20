@@ -89,7 +89,8 @@ class AbstractConditionalOffer(models.Model):
 
     # Use this field to limit the number of times this offer can be applied in
     # total.  Note that a single order can apply an offer multiple times so
-    # this is not the same as the number of orders that can use it.
+    # this is not necessarily the same as the number of orders that can use it.
+    # Also see max_basket_applications.
     max_global_applications = models.PositiveIntegerField(
         _("Max global applications"),
         help_text=_("The number of times this offer can be used before it "
@@ -104,7 +105,8 @@ class AbstractConditionalOffer(models.Model):
         blank=True, null=True)
 
     # Use this field to limit the number of times this offer can be applied to
-    # a basket (and hence a single order).
+    # a basket (and hence a single order). Often, an offer should only be
+    # usable once per basket/order, so this field will commonly be set to 1.
     max_basket_applications = models.PositiveIntegerField(
         _("Max basket applications"),
         blank=True, null=True,
@@ -121,6 +123,8 @@ class AbstractConditionalOffer(models.Model):
                     "unavailable"))
 
     # TRACKING
+    # These fields are used to enforce the limits set by the
+    # max_* fields above.
 
     total_discount = models.DecimalField(
         _("Total Discount"), decimal_places=2, max_digits=12,
@@ -418,7 +422,7 @@ class AbstractBenefit(models.Model):
     # A custom benefit class can be used instead.  This means the
     # type/value/max_affected_items fields should all be None.
     proxy_class = fields.NullCharField(
-        _("Custom class"), max_length=255, unique=True, default=None)
+        _("Custom class"), max_length=255, default=None)
 
     class Meta:
         abstract = True
@@ -858,7 +862,7 @@ class AbstractRange(models.Model):
             return False
         if self.includes_all_products:
             return True
-        if product.product_class_id in self._class_ids():
+        if product.get_product_class().id in self._class_ids():
             return True
         included_product_ids = self._included_product_ids()
         # If the product's parent is in the range, the child is automatically included as well
@@ -954,7 +958,7 @@ class AbstractRange(models.Model):
             Q(id__in=self._included_product_ids()) |
             Q(product_class_id__in=self._class_ids()) |
             Q(productcategory__category_id__in=self._category_ids())
-        ).exclude(id__in=self._excluded_product_ids())
+        ).exclude(id__in=self._excluded_product_ids()).distinct()
 
     @property
     def is_editable(self):
