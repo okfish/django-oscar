@@ -31,7 +31,7 @@ class TestUnavailablePolicy(TestCase):
 
     def test_gives_a_reason_for_unavailability(self):
         __, msg = self.availability.is_purchase_permitted(1)
-        self.assertEqual("Unavailable", msg)
+        self.assertEqual("unavailable", msg)
 
     def test_returns_availability_code(self):
         self.assertEqual('unavailable', self.availability.code)
@@ -51,14 +51,22 @@ class TestStockRequiredWrapperForRecordWithStock(TestCase):
             self.assertTrue(is_permitted)
 
     def test_forbids_purchases_over_stock_level(self):
-        is_permitted, __ = self.availability.is_purchase_permitted(7)
+        is_permitted, msg = self.availability.is_purchase_permitted(7)
         self.assertFalse(is_permitted)
+        self.assertEqual(msg, "a maximum of 5 can be bought")
 
     def test_returns_correct_code(self):
         self.assertEqual('instock', self.availability.code)
 
     def test_returns_correct_message(self):
         self.assertEqual('In stock (5 available)', self.availability.message)
+
+    def test_returns_correct_message_when_allocation_higher_than_stock(self):
+        # this is the value passed when stock lower than allocation by 1
+        self.availability.num_available = -1
+        is_permitted, msg = self.availability.is_purchase_permitted(1)
+        self.assertFalse(is_permitted)
+        self.assertEqual(msg, "no stock available")
 
 
 class TestStockRequiredWrapperForRecordWithoutStock(TestCase):

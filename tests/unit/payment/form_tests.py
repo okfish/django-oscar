@@ -1,10 +1,15 @@
 import datetime
 
+from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 from django.forms import ValidationError
 
-from oscar.apps.payment import forms, models
 
+from oscar.apps.payment import forms, models
+ # types=[bankcards.VISA, bankcards.VISA_ELECTRON, bankcards.MASTERCARD,
+ #               bankcards.AMEX, bankcards.MAESTRO, bankcards.DINERS_CLUB,
+ #               bankcards.DISCOVER, bankcards.JCB, bankcards.CHINA_UNIONPAY,
+ #               bankcards.SOLO, bankcards.LASER, bankcards.SWITCH]
 
 class TestBankcardNumberField(TestCase):
 
@@ -19,6 +24,22 @@ class TestBankcardNumberField(TestCase):
         with self.assertRaises(ValidationError):
             self.field.clean('1234123412341234')
 
+    def test_amex_accepted_when_allowed(self):
+        # Number taken from http://www.darkcoding.net/credit-card-numbers/
+        self.field = forms.BankcardNumberField(types=['American Express',])
+        self.assertEqual(
+            '348934265521923', self.field.clean('348934265521923'))
+
+    def test_amex_rejected_when_disallowed(self):
+        self.field = forms.BankcardNumberField(types=['Visa',])
+        with self.assertRaises(ValidationError):
+            self.field.clean('348934265521923')
+
+
+    def test_raises_error_for_invalid_card_type(self):
+        with self.assertRaises(ImproperlyConfigured):
+            self.field = forms.BankcardNumberField(types=['American Express', 'Nonsense'])
+
 
 class TestStartingMonthField(TestCase):
 
@@ -26,12 +47,12 @@ class TestStartingMonthField(TestCase):
         self.field = forms.BankcardStartingMonthField()
 
     def test_returns_a_date(self):
-        start_date = self.field.clean(['01', '2010'])
+        start_date = self.field.clean(['01', '2014'])
         self.assertTrue(isinstance(start_date, datetime.date))
 
     def test_rejects_invalid_months(self):
         with self.assertRaises(ValidationError):
-            self.field.clean(['00', '2010'])
+            self.field.clean(['00', '2014'])
 
     def test_rejects_invalid_years(self):
         with self.assertRaises(ValidationError):
@@ -43,7 +64,7 @@ class TestStartingMonthField(TestCase):
             self.field.clean(['01', today.year + 1])
 
     def test_returns_the_first_day_of_month(self):
-        start_date = self.field.clean(['01', '2010'])
+        start_date = self.field.clean(['01', '2014'])
         self.assertEqual(1, start_date.day)
 
 
@@ -59,7 +80,7 @@ class TestExpiryMonthField(TestCase):
 
     def test_rejects_invalid_months(self):
         with self.assertRaises(ValidationError):
-            self.field.clean(['00', '2010'])
+            self.field.clean(['00', '2014'])
 
     def test_rejects_invalid_years(self):
         with self.assertRaises(ValidationError):
@@ -116,7 +137,7 @@ class TestValidBankcardForm(TestCase):
             'number': '1000010000000007',
             'ccv': '123',
             'expiry_month_0': '01',
-            'expiry_month_1': today.year + 1,
+            'expiry_month_1': today.year + 1
         }
         self.form = forms.BankcardForm(data)
         self.assertTrue(self.form.is_valid())

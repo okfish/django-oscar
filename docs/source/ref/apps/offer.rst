@@ -33,7 +33,7 @@ in isolation or combination:
 
 * Date range - a date can be set, outside of which the offer is unavailable.
 
-* Max global applications - the number of times and offer can be used can be capped.
+* Max global applications - the number of times an offer can be used can be capped.
   Note that an offer can be used multiple times within the same order so this
   isn't the same as limiting the number of orders that can use an offer.
 
@@ -97,7 +97,7 @@ offer.  For example, spend £100 on perfume, get 500 credits (note credits don't
 exist in core Oscar but can be implemented using the 'accounts' plugin).
 
 Under the hood, benefits are modelled by 4 attributes: a range, a type, a value
-and a setting for the maxinum number of basket items that can be affected by a
+and a setting for the maximum number of basket items that can be affected by a
 benefit.  This last settings is useful for limiting the scope of an offer.  For
 instance, you can create a benefit that gives 40% off ONE products from a given
 range by setting the max affected items to 1.  Without this setting, the benefit
@@ -114,8 +114,7 @@ Here's some example offers:
 *3 for 2 on books*
     1. Create a range for all books.
     2. Use a **count-based** condition that links to this range with a value of 3.
-    3. Use a **multibuy** benefit with no value or range (multibuy benefits use
-       the range of the condition and so don't need their own)
+    3. Use a **multibuy** benefit with no value (the value is implicitly 1)
 
 *Spend £20 on DVDs, get 25% off*
     1. Create a range for all DVDs.
@@ -130,10 +129,14 @@ Here's some example offers:
 
 More to come...
 
+Abstract models
+---------------
+
+.. automodule:: oscar.apps.offer.abstract_models
+    :members:
+
 Models
 -------
-
-Please note that models in this app are not abstract.
 
 .. automodule:: oscar.apps.offer.models
     :members:

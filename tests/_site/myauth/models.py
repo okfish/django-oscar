@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Code will only work with Django >= 1.5. See tests/config.py
 import re
 
 from django.utils.translation import ugettext_lazy as _
@@ -48,5 +47,10 @@ class User(AbstractUser):
         validators=[
             validators.RegexValidator(re.compile('^[\w.@+-]+$'), _('Enter a valid username.'), 'invalid')
         ])
+    extra_field = models.CharField(
+        _('Nobody needs me'), max_length=5, blank=True)
 
     objects = CustomUserManager()
+
+    class Meta:
+        app_label = 'myauth'

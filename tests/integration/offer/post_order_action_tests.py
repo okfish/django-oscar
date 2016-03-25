@@ -1,8 +1,6 @@
 from decimal import Decimal as D
 
 from django.test import TestCase
-from django.test.client import RequestFactory
-import mock
 
 from oscar.apps.offer import models, utils, custom
 from oscar.test import factories
@@ -13,13 +11,14 @@ class CustomAction(models.Benefit):
 
     class Meta:
         proxy = True
+        app_label = 'tests'
 
     def apply(self, basket, condition, offer):
         condition.consume_items(offer, basket, ())
         return models.PostOrderAction(
             "Something will happen")
 
-    def apply_deferred(self, basket):
+    def apply_deferred(self, basket, order, application):
         return "Something happened"
 
     @property
@@ -41,19 +40,13 @@ def create_offer():
         offer_type=models.ConditionalOffer.SITE)
 
 
-def apply_offers(basket):
-    req = RequestFactory().get('/')
-    req.user = mock.Mock()
-    utils.Applicator().apply(req, basket)
-
-
 class TestAnOfferWithAPostOrderAction(TestCase):
 
     def setUp(self):
         self.basket = factories.create_basket(empty=True)
         add_product(self.basket, D('12.00'), 1)
         create_offer()
-        apply_offers(self.basket)
+        utils.Applicator().apply(self.basket)
 
     def test_applies_correctly_to_basket_which_meets_condition(self):
         self.assertEqual(1, len(self.basket.offer_applications))

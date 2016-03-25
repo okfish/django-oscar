@@ -1,32 +1,68 @@
+# Use the newer container-based infrastructure
+# http://docs.travis-ci.com/user/workers/container-based-infrastructure/
+sudo: false
+
+# Cache pip downloads
+cache:
+    # Apparently if you override the install command that silently disables the
+    # cache: pip support. This is less than ideal and @dstufft opened up
+    # travis-ci/travis-ci#3239 to hopefully get that addressed. For now we
+    # manually add the pip cache directory to the build cache.
+    directories:
+      - ~/.cache/pip
+
 language: python
 
 python:
-  - '2.6'
-  - '2.7'
-  - '3.3'
+    - 2.7
+    - 3.3
+    - 3.4
+    - 3.5
 
 env:
-  global:
-    # $TRANSIFEX_PASSWORD for oscar_bot (used in transifex.sh)
-    secure: FuIlzEsGJiAwhaIRBmRNsq9eXmuzs25fX6BChknW4lDyVAySWMp0+Zps9Bd0JgfFYUG3Ip+OTmksYIoTUsG25ZJS9cq1IFt3QKUAN70YCI/4ZBLeIdICPEyxq+Km179+NeEXmBUug17RLMLxh3MWfO+RKUHK9yHIPNNpq0dNyoo=
-  matrix:
-    - DJANGO_VERSION=1.5.5
-    - DJANGO_VERSION=1.6.1
+    global:
+        # $TRANSIFEX_PASSWORD for oscar_bot (used in transifex.sh)
+        - secure: FuIlzEsGJiAwhaIRBmRNsq9eXmuzs25fX6BChknW4lDyVAySWMp0+Zps9Bd0JgfFYUG3Ip+OTmksYIoTUsG25ZJS9cq1IFt3QKUAN70YCI/4ZBLeIdICPEyxq+Km179+NeEXmBUug17RLMLxh3MWfO+RKUHK9yHIPNNpq0dNyoo=
+
+        # These two environment variables could be set by Travis itself, or Travis
+        # could configure itself in /etc/, ~/, or inside of the virtual
+        # environments. In any case if these two values get configured then end
+        # users only need to enable the pip cache and manually run pip wheel before
+        # running pip install.
+        - PIP_WHEEL_DIR=$HOME/.cache/pip/wheels
+        - PIP_FIND_LINKS=file://$HOME/.cache/pip/wheels
+    matrix:
+        - DJANGO=Django==1.8.11
+        - DJANGO=Django==1.9.3
+
 
 matrix:
-  allow_failures:
-    - python: '3.3'
+    exclude:
+        # Python 3.3 is not supported by Django 1.9
+        - python: 3.3
+          env: "DJANGO=Django==1.9.3"
+
+before_install:
+    - pip install codecov
 
 install:
-  - easy_install Django==$DJANGO_VERSION
+    # Before installation, we'll run ``pip wheel``, this will build wheels for
+    # anything that doesn't already have one on PyPI.
+    - pip wheel -r requirements.txt
+    # Actually install our dependencies now, this will pull from the directory
+    # that the first command placed the Wheels into.
+    - pip install --pre $DJANGO 
+    - pip install -e . -r requirements.txt 
 
 before_script:
-  - mysql -e 'create database oscar_vagrant;'
-  - psql -c 'create database oscar_vagrant;' -U postgres
+    # Create testing databases for running migrations against
+    - mysql -e 'CREATE DATABASE oscar_travis;'
+    - psql -c 'CREATE DATABASE oscar_travis;' -U postgres
 
 script:
-  - make travis
+    - make travis
 
 after_success:
-  - coveralls
-  - ./transifex.sh
+    - coveralls
+    - codecov
+    - ./transifex.sh

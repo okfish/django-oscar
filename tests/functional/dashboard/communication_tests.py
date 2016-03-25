@@ -1,19 +1,17 @@
-from django_dynamic_fixture import G
 from django.core.urlresolvers import reverse
 from django.core import mail
 
-from oscar.test.testcases import WebTestCase
-from oscar.core.compat import get_user_model
 from oscar.apps.customer.models import CommunicationEventType
+from oscar.test.factories import UserFactory
+from oscar.test.testcases import WebTestCase
 
-User = get_user_model()
 
 class TestAnAdmin(WebTestCase):
 
     def setUp(self):
-        self.staff = G(User, is_staff=True, username='1234')
+        self.staff = UserFactory(is_staff=True, username='1234')
         self.commtype = CommunicationEventType.objects.create(
-            code='PASSWORD_RESET', name="Password reset",
+            name="Password reset",
             category=CommunicationEventType.USER_RELATED)
 
     def test_can_preview_an_email(self):

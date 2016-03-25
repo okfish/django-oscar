@@ -29,6 +29,9 @@ sys.path.append(sandbox_folder)
 # Specify settings module (which will be picked up from the sandbox)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings_sphinx')
 
+import django
+django.setup()
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -58,7 +61,6 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'django-oscar'
-copyright = u'2010-2014, Tangent Labs'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

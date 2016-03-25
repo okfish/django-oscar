@@ -1,40 +1,47 @@
+# These requirements are only necessary when developing on Oscar.
+# You can check for newer versions of these dependencies using this command
+#
+# $ for x in `yolk -l | awk '{print $1}'`; do yolk -d $x 2>/dev/null; done
+
 # Development
-django-debug-toolbar>=1.0.1,<1.1
-django-debug-toolbar-template-timings>=0.5.5
-django-extensions>=1.3.3,<1.4.0
-Werkzeug>=0.9.4,<0.10
+django-debug-toolbar==1.4.0
+django-extensions==1.6.1
+Werkzeug==0.9.6
 
 # Sandbox
-Whoosh>=2.5
-pysolr>=3.1
-requests==2.1
-uWSGI==1.9.21.1
+Whoosh==2.6.0
+pysolr==3.2.0
+requests==2.7.0
+uWSGI==2.0.12
+whitenoise==2.0.6
+Pillow==2.7.0
 
 # Docs
-Sphinx>=1.1.3,<1.3
-sphinxcontrib-napoleon==0.2.2
-sphinx_rtd_theme
+Sphinx==1.3.3
+sphinxcontrib-napoleon==0.4.3
+sphinx_rtd_theme==0.1.9
 
 # Testing
-django-dynamic-fixture>=1.6.4,<1.7
-mock>=1.0.1,<1.1
-coverage>=3.6,<3.7
-django-nose>=1.2,<1.3
-spec>=0.11.1,<0.12
-WebTest>=2.0,<2.1
-django-webtest>=1.7,<1.8
-tox==1.6.1
-coveralls>=0.1.1,<0.2
-purl>=0.4
-behave==1.2.3
-nose-django-querycount==0.3
-unittest2==0.5.1  # Needed so that @skip works in Py2.6
-
-# i18n
-django-rosetta>=0.7.2
+coverage==3.7.1
+spec==0.11.1
+WebTest==2.0.17
+django-webtest==1.7.8
+pytest==2.8.5
+pytest-cache==1.0
+pytest-cov==2.2.0
+pytest-django==2.9.1
+pytest-xdist==1.13.1
+tox==1.8.1
+coveralls==0.4.4
 
 # Misc
-flake8>=2.1
-pyprof2calltree==1.3.1
-ipdb>=0.8,<0.9
-ipython>=1.1.0,<1.2.0
+flake8==2.5.1
+flake8-debugger==1.4.0
+flake8-blind-except==0.1.0
+pyprof2calltree==1.3.2
+ipdb==0.8.1
+ipython==4.0.1
+isort==4.2.2
+
+# Country data
+pycountry==1.8

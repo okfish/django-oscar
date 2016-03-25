@@ -23,27 +23,24 @@ Default: ``''``
 
 The tagline that is displayed next to the shop name and in the browser title.
 
-``OSCAR_PARTNER_WRAPPERS``
---------------------------
+``OSCAR_HOMEPAGE``
+------------------
 
-Default: ``{}``
+Default: ``reverse_lazy('promotions:home')``
 
-This is an important setting which defines availability for each fulfillment
-partner.  The setting should be a dict from parter name to a path to a "wrapper"
-class.  For example::
+URL of home page of your site. This value is used for `Home` link in
+navigation and redirection page after logout. Useful if you use a different app
+to serve your homepage.
 
-    OSCAR_PARTNER_WRAPPERS = {
-        'Acme': 'myproject.partners.AcmeWrapper'
-        'Omnicorp': 'myproject.partners.OmnicorpWrapper'
-    }
+``OSCAR_ACCOUNTS_REDIRECT_URL``
+-------------------------------
 
-The wrapper class should subclass ``oscar.apps.partner.wrappers.DefaultWrapper``
-and override the appropriate methods to control availability behaviour.
+Default: ``'customer:profile-view'``
 
-.. warning::
-
-   This settings has been deprecated for Oscar 0.6.  Use :ref:`strategy classes <strategy_class>` 
-   instead to provide availability and pricing information.
+Oscar has a view that gets called any time the user clicks on 'My account' or
+similar. By default it's a dumb redirect to the view configured with this
+setting. But you could also override the view to display a more useful
+account summary page or such like.
 
 ``OSCAR_RECENTLY_VIEWED_PRODUCTS``
 ----------------------------------
@@ -66,47 +63,62 @@ Default: ``'oscar_history'``
 
 The name of the cookie for showing recently viewed products.
 
-``OSCAR_PRODUCTS_PER_PAGE``
----------------------------
+Pagination
+----------
 
-Default: 20
+There are a number of settings that control pagination in Oscar's views. They
+all default to 20.
 
-The number of products to paginate by.
+- ``OSCAR_PRODUCTS_PER_PAGE``
+- ``OSCAR_OFFERS_PER_PAGE``
+- ``OSCAR_REVIEWS_PER_PAGE``
+- ``OSCAR_NOTIFICATIONS_PER_PAGE``
+- ``OSCAR_EMAILS_PER_PAGE``
+- ``OSCAR_ORDERS_PER_PAGE``
+- ``OSCAR_ADDRESSES_PER_PAGE``
+- ``OSCAR_STOCK_ALERTS_PER_PAGE``
+- ``OSCAR_DASHBOARD_ITEMS_PER_PAGE``
 
 .. _oscar_search_facets:
 
 ``OSCAR_SEARCH_FACETS``
-------------------------------
+-----------------------
 
 A dictionary that specifies the facets to use with the search backend.  It
 needs to be a dict with keys ``fields`` and ``queries`` for field- and
 query-type facets.  The default is::
 
     OSCAR_SEARCH_FACETS = {
-        'fields': {
-            # The key for these dicts will be used when passing facet data
-            # to the template. Same for the 'queries' dict below.
-            'category': {
-                'name': _('Category'),
-                'field': 'category'
-            }
-        },
-        'queries': {
-            'price_range': {
-                'name': _('Price range'),
-                'field': 'price',
-                'queries': [
-                    # This is a list of (name, query) tuples where the name will
-                    # be displayed on the front-end.
-                    (_('0 to 40'), '[0 TO 20]'),
-                    (_('20 to 40'), '[20 TO 40]'),
-                    (_('40 to 60'), '[40 TO 60]'),
-                    (_('60+'), '[60 TO *]'),
-                ]
-            }
-        }
+        'fields': OrderedDict([
+            ('product_class', {'name': _('Type'), 'field': 'product_class'}),
+            ('rating', {'name': _('Rating'), 'field': 'rating'}),
+        ]),
+        'queries': OrderedDict([
+            ('price_range',
+             {
+                 'name': _('Price range'),
+                 'field': 'price',
+                 'queries': [
+                     # This is a list of (name, query) tuples where the name will
+                     # be displayed on the front-end.
+                     (_('0 to 20'), u'[0 TO 20]'),
+                     (_('20 to 40'), u'[20 TO 40]'),
+                     (_('40 to 60'), u'[40 TO 60]'),
+                     (_('60+'), u'[60 TO *]'),
+                 ]
+             }),
+        ]),
     }
 
+``OSCAR_PRODUCT_SEARCH_HANDLER``
+-----------------------
+
+The search handler to be used in the product list views. If ``None``,
+Oscar tries to guess the correct handler based on your Haystack settings.
+
+Default::
+
+    None
 
 ``OSCAR_PROMOTION_POSITIONS``
 -----------------------------
@@ -145,6 +157,18 @@ Default: see ``oscar.defaults`` (too long to include here).
 
 A list of dashboard navigation elements. Usage is explained in
 :doc:`/howto/how_to_configure_the_dashboard_navigation`.
+
+``OSCAR_DASHBOARD_DEFAULT_ACCESS_FUNCTION``
+-------------------------------------------
+
+Default: ``'oscar.apps.dashboard.nav.default_access_fn'``
+
+``OSCAR_DASHBOARD_NAVIGATION`` allows passing an access function for each node
+which is used to determine whether to show the node for a specific user or not.
+If no access function is defined, the function specified here is used.
+The default function integrates with the permission-based dashboard and shows
+the node if the user will be able to access it. That should be sufficient for
+most cases.
 
 Order settings
 ==============
@@ -291,26 +315,6 @@ used in Oscar's default templates but could be used to include static assets
 Offer settings
 ==============
 
-``OSCAR_OFFER_BLACKLIST_PRODUCT``
----------------------------------
-
-Default: ``None``
-
-A function which takes a product as its sole parameter and returns a boolean
-indicating if the product is blacklisted from offers or not.
-
-Example::
-
-    from decimal import Decimal as D
-
-    def is_expensive(product):
-        if product.has_stockrecord:
-            return product.stockrecord.price_incl_tax < D('1000.00')
-        return False
-
-    # Don't allow expensive products to be in offers
-    OSCAR_OFFER_BLACKLIST_PRODUCT = is_expensive
-
 ``OSCAR_OFFER_ROUNDING_FUNCTION``
 ---------------------------------
 
@@ -343,13 +347,6 @@ Default: ``'oscar_open_basket'``
 
 The name of the cookie for the open basket.
 
-``OSCAR_BASKET_COOKIE_SAVED``
------------------------------
-
-Default: ``'oscar_saved_basket'``
-
-The name of the cookie for the saved basket.
-
 Currency settings
 =================
 
@@ -361,7 +358,7 @@ Default: ``GBP``
 This should be the symbol of the currency you wish Oscar to use by default.
 This will be used by the currency templatetag.
 
-``OSCAR_CURRENCY_LOCALE``
+``OSCAR_CURRENCY_FORMAT``
 -------------------------
 
 Default: ``None``
@@ -369,15 +366,7 @@ Default: ``None``
 This can be used to customise currency formatting. The value will be passed to
 the ``format_currency`` function from the `Babel library`_.
 
-.. _`Babel library`: http://babel.edgewall.org/wiki/ApiDocs/0.9/babel.numbers#babel.numbers:format_decimal
-
-``OSCAR_CURRENCY_FORMAT``
--------------------------
-
-Default: ``None``
-
-This can be used to customise currency formatting. The value will be passed to
-the ``format_currency`` function from the Babel library.
+.. _`Babel library`: http://babel.pocoo.org/docs/api/numbers/#babel.numbers.format_currency
 
 Upload/media settings
 =====================
@@ -392,6 +381,15 @@ The folder name can contain date format strings as described in the `Django Docs
 
 .. _`Django Docs`: https://docs.djangoproject.com/en/dev/ref/models/fields/#filefield
 
+``OSCAR_DELETE_IMAGE_FILES``
+----------------------------
+
+Default: ``True``
+
+If enabled, a ``post_delete`` hook will attempt to delete any image files and
+created thumbnails when a model with an ``ImageField`` is deleted. This is
+usually desired, but might not be what you want when using a remote storage.
+
 
 ``OSCAR_PROMOTION_FOLDER``
 --------------------------
@@ -399,6 +397,8 @@ The folder name can contain date format strings as described in the `Django Docs
 Default: ``images/promotions/``
 
 The folder within ``MEDIA_ROOT`` used for uploaded promotion images.
+
+.. _missing-image-label:
 
 ``OSCAR_MISSING_IMAGE_URL``
 ---------------------------
@@ -422,7 +422,7 @@ Slug settings
 ``OSCAR_SLUG_MAP``
 ------------------
 
-Default: ``None``
+Default: ``{}``
 
 A dictionary to map strings to more readable versions for including in URL
 slugs.  This mapping is appled before the slugify function.  
@@ -431,28 +431,33 @@ stripped.  For instance::
 
     OSCAR_SLUG_MAP = {
         'c++': 'cpp',
-        'f#': 'fshared',
+        'f#': 'fsharp',
     }
 
 ``OSCAR_SLUG_FUNCTION``
 -----------------------
 
-Default: ``django.template.defaultfilters.slugify``
+Default: ``'oscar.core.utils.default_slugifier'``
 
 The slugify function to use.  Note that is used within Oscar's slugify wrapper
-(in ``oscar.core.utils``) which applies the custom map and blacklist.
+(in ``oscar.core.utils``) which applies the custom map and blacklist. String
+notation is recommended, but specifying a callable is supported for
+backwards-compatibility.
 
 Example::
 
-    def some_slugify(value)
-        pass
+    # in myproject.utils
+    def some_slugify(value):
+        return value
 
-    OSCAR_SLUG_FUNCTION = some_slugify
+    # in settings.py
+    OSCAR_SLUG_FUNCTION = 'myproject.utils.some_slugify'
+
 
 ``OSCAR_SLUG_BLACKLIST``
 ------------------------
 
-Default: ``None``
+Default: ``[]``
 
 A list of words to exclude from slugs.
 

@@ -11,7 +11,7 @@ Models
 
 The payment app provides several models to track payments:
 
-* ``SourceType`` - This is the type of payment source used (eg PayPal, DataCash, BrainTree).  As part of setting up
+* ``SourceType`` - This is the type of payment source used (eg PayPal, DataCash).  As part of setting up
   a new Oscar site you would create a SourceType for each of the payment
   gateways you are using.
 * ``Source`` - A source of payment for a single order.  This tracks how an order
@@ -34,9 +34,11 @@ created (although this is optional).
 This situation is implemented within the sandbox site for the
 django-oscar-paypal_ extension.  Please use that as a reference.
 
-.. _django-oscar-paypal: https://github.com/tangentlabs/django-oscar-paypal/tree/develop/sandbox
+See also the sandbox for django-oscar-datacash_ which follows a similar pattern.
 
-See also the sandbox for django-oscar-datacash which follows a similar pattern.
+
+.. _django-oscar-paypal: https://github.com/django-oscar/django-oscar-paypal/tree/master/sandbox
+.. _django-oscar-datacash: https://github.com/django-oscar/django-oscar-datacash/tree/master/sandbox
 
 Integration into checkout
 -------------------------
@@ -59,6 +61,11 @@ common exceptions which can occur:
 * ``oscar.apps.payment.exceptions.UnableToTakePayment`` For *anticipated* payment
   problems such as invalid bankcard number, not enough funds in account - that kind
   of thing.
+
+* ``oscar.apps.payment.exceptions.UserCancelled`` During many payment flows,
+  the user is able to cancel the process. This should often be treated
+  differently from a payment error, e.g. it might not be appropriate to offer
+  to retry the payment.
 
 * ``oscar.apps.payment.exceptions.PaymentError``  For *unanticipated* payment
   errors such as the payment gateway not responding or being badly configured.

@@ -6,17 +6,17 @@ import mock
 from oscar.apps.offer import models
 from oscar.test import factories
 from oscar.test.basket import add_product
-from tests.unit.offer import OfferTest
 
 
-class TestCountCondition(OfferTest):
+class TestCountCondition(TestCase):
 
     def setUp(self):
-        super(TestCountCondition, self).setUp()
+        self.range = models.Range.objects.create(
+            name="All products range", includes_all_products=True)
+        self.basket = factories.create_basket(empty=True)
         self.condition = models.CountCondition(
             range=self.range, type="Count", value=2)
         self.offer = mock.Mock()
-        self.offer.applies_to_tax_exclusive_prices = False
 
     def test_is_not_satified_by_empty_basket(self):
         self.assertFalse(self.condition.is_satisfied(self.offer, self.basket))
@@ -64,13 +64,15 @@ class TestCountCondition(OfferTest):
         self.assertFalse(self.condition.is_satisfied(self.offer, self.basket))
 
 
-class ValueConditionTest(OfferTest):
+class ValueConditionTest(TestCase):
+
     def setUp(self):
-        super(ValueConditionTest, self).setUp()
+        self.range = models.Range.objects.create(
+            name="All products range", includes_all_products=True)
+        self.basket = factories.create_basket(empty=True)
         self.condition = models.ValueCondition(
             range=self.range, type="Value", value=D('10.00'))
         self.offer = mock.Mock()
-        self.offer.applies_to_tax_exclusive_prices = False
         self.item = factories.create_product(price=D('5.00'))
         self.expensive_item = factories.create_product(price=D('15.00'))
 
@@ -138,7 +140,6 @@ class TestCoverageCondition(TestCase):
         self.condition = models.CoverageCondition(
             range=self.range, type="Coverage", value=2)
         self.offer = mock.Mock()
-        self.offer.applies_to_tax_exclusive_prices = False
 
     def test_empty_basket_fails(self):
         self.assertFalse(self.condition.is_satisfied(self.offer, self.basket))

@@ -1,25 +1,21 @@
 import os
-import sys
 
 # Path helper
-PROJECT_DIR = os.path.dirname(__file__)
 location = lambda x: os.path.join(
     os.path.dirname(os.path.realpath(__file__)), x)
-PY3 = sys.version_info >= (3, 0)
 
 USE_TZ = True
 
 DEBUG = True
 TEMPLATE_DEBUG = True
 SQL_DEBUG = True
-SEND_BROKEN_LINK_EMAILS = False
 
 ALLOWED_HOSTS = ['latest.oscarcommerce.com',
-                 'sandbox.oscar.tangentlabs.co.uk',
                  'master.oscarcommerce.com']
 
+# This is needed for the hosted version of the sandbox
 ADMINS = (
-    ('David Winterbottom', 'david.winterbottom@tangentlabs.co.uk'),
+    ('David Winterbottom', 'david.winterbottom@gmail.com'),
 )
 EMAIL_SUBJECT_PREFIX = '[Oscar sandbox] '
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -30,7 +26,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(os.path.dirname(__file__), 'db.sqlite'),
+        'NAME': location('db.sqlite'),
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
@@ -45,7 +41,6 @@ CACHES = {
     }
 }
 
-
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -55,29 +50,38 @@ CACHES = {
 # system time zone.
 TIME_ZONE = 'Europe/London'
 
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-gb'
 
-# This should match the locale folders in oscar/locale
+# Includes all languages that have >50% coverage in Transifex
+# Taken from Django's default setting for LANGUAGES
+gettext_noop = lambda s: s
 LANGUAGES = (
-    ('en-gb', 'English'),
-    ('da', 'Danish'),
-    ('de', 'German'),
-    ('el', 'Greek'),
-    ('en', 'English'),
-    ('es', 'Spanish'),
-    ('fr', 'French'),
-    ('it', 'Italian'),
-    ('ja', 'Japanese'),
-    ('pl', 'Polish'),
-    ('pt', 'Portugese'),
-    ('ru', 'Russian'),
-    ('sk', 'Slovakian'),
+    ('ar', gettext_noop('Arabic')),
+    ('ca', gettext_noop('Catalan')),
+    ('cs', gettext_noop('Czech')),
+    ('da', gettext_noop('Danish')),
+    ('de', gettext_noop('German')),
+    ('en-gb', gettext_noop('British English')),
+    ('el', gettext_noop('Greek')),
+    ('es', gettext_noop('Spanish')),
+    ('fi', gettext_noop('Finnish')),
+    ('fr', gettext_noop('French')),
+    ('it', gettext_noop('Italian')),
+    ('ko', gettext_noop('Korean')),
+    ('nl', gettext_noop('Dutch')),
+    ('pl', gettext_noop('Polish')),
+    ('pt', gettext_noop('Portuguese')),
+    ('pt-br', gettext_noop('Brazilian Portuguese')),
+    ('ro', gettext_noop('Romanian')),
+    ('ru', gettext_noop('Russian')),
+    ('sk', gettext_noop('Slovak')),
+    ('uk', gettext_noop('Ukrainian')),
+    ('zh-cn', gettext_noop('Simplified Chinese')),
 )
-ROSETTA_STORAGE_CLASS = 'rosetta.storage.SessionRosettaStorage'
-ROSETTA_ENABLE_TRANSLATION_SUGGESTIONS = True
-ROSETTA_REQUIRES_AUTH = False
 
 SITE_ID = 1
 
@@ -111,7 +115,6 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -147,7 +150,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.transaction.TransactionMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     # Allow languages to be selected
     'django.middleware.locale.LocaleMiddleware',
@@ -193,12 +195,12 @@ LOGGING = {
     'handlers': {
         'null': {
             'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
+            'class': 'logging.NullHandler',
         },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose'
+            'formatter': 'simple'
         },
         'checkout_file': {
             'level': 'INFO',
@@ -270,22 +272,11 @@ LOGGING = {
             'level': 'INFO',
         },
         # Third party
-        'south': {
-            'handlers': ['null'],
-            'propagate': True,
-            'level': 'INFO',
-        },
         'sorl.thumbnail': {
             'handlers': ['sorl_file'],
             'propagate': True,
             'level': 'INFO',
         },
-        # Suppress output of this debug toolbar panel
-        'template_timings_panel': {
-            'handlers': ['null'],
-            'level': 'DEBUG',
-            'propagate': False,
-        }
     }
 }
 
@@ -299,14 +290,12 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.flatpages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'django_extensions',
     # Debug toolbar + extensions
     'debug_toolbar',
-    'template_timings_panel',
-    'south',
-    'rosetta',          # For i18n testing
-    'compressor',
     'apps.gateway',     # For allowing dashboard access
+    'widget_tweaks',
 ]
 from oscar import get_core_apps
 INSTALLED_APPS = INSTALLED_APPS + get_core_apps()
@@ -314,20 +303,37 @@ INSTALLED_APPS = INSTALLED_APPS + get_core_apps()
 # Add Oscar's custom auth backend so users can sign in using their email
 # address.
 AUTHENTICATION_BACKENDS = (
-    'oscar.apps.customer.auth_backends.Emailbackend',
+    'oscar.apps.customer.auth_backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
 LOGIN_REDIRECT_URL = '/'
 APPEND_SLASH = True
 
+# ====================
+# Messages contrib app
+# ====================
+
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger'
+}
+
 # Haystack settings
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+        'PATH': location('whoosh_index'),
     },
 }
+# Here's a sample Haystack config if using Solr (which is recommended)
+#HAYSTACK_CONNECTIONS = {
+#    'default': {
+#        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
+#        'URL': u'http://127.0.0.1:8983/solr/oscar_latest/',
+#        'INCLUDE_SPELLING': True
+#    },
+#}
 
 # =============
 # Debug Toolbar
@@ -345,21 +351,12 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.sql.SQLPanel',
     'debug_toolbar.panels.staticfiles.StaticFilesPanel',
     'debug_toolbar.panels.templates.TemplatesPanel',
-    'template_timings_panel.panels.TemplateTimings.TemplateTimings',
     'debug_toolbar.panels.cache.CachePanel',
     'debug_toolbar.panels.signals.SignalsPanel',
     'debug_toolbar.panels.logging.LoggingPanel',
     'debug_toolbar.panels.redirects.RedirectsPanel',
 ]
 INTERNAL_IPS = ['127.0.0.1', '::1']
-
-if PY3:
-    # Template timings panel doesn't work with Python 3 atm
-    # https://github.com/orf/django-debug-toolbar-template-timings/issues/18
-    INSTALLED_APPS.remove('template_timings_panel')
-    DEBUG_TOOLBAR_PANELS.remove(
-        'template_timings_panel.panels.TemplateTimings.TemplateTimings')
-
 
 # ==============
 # Oscar settings
@@ -384,45 +381,35 @@ DISPLAY_VERSION = False
 # Order processing
 # ================
 
-# Some sample order/line status settings
+# Sample order/line status settings. This is quite simplistic. It's like you'll
+# want to override the set_status method on the order object to do more
+# sophisticated things.
 OSCAR_INITIAL_ORDER_STATUS = 'Pending'
 OSCAR_INITIAL_LINE_STATUS = 'Pending'
+
+# This dict defines the new order statuses than an order can move to
 OSCAR_ORDER_STATUS_PIPELINE = {
     'Pending': ('Being processed', 'Cancelled',),
-    'Being processed': ('Processed', 'Cancelled',),
+    'Being processed': ('Complete', 'Cancelled',),
     'Cancelled': (),
-    'Processed': (),
+    'Complete': (),
 }
 
+# This dict defines the line statuses that will be set when an order's status
+# is changed
+OSCAR_ORDER_STATUS_CASCADE = {
+    'Being processed': 'Being processed',
+    'Cancelled': 'Cancelled',
+    'Complete': 'Shipped',
+}
 
-# LESS/CSS/statics
-# ================
+# LESS/CSS
+# ========
 
 # We default to using CSS files, rather than the LESS files that generate them.
-# If you want to develop Oscar's CSS, then set USE_LESS=True and
-# COMPRESS_ENABLED=False in your settings_local module and ensure you have
-# 'lessc' installed.  You can do this by running:
-#
-#    pip install -r requirements_less.txt
-#
-# which will install node.js and less in your virtualenv.
-
+# If you want to develop Oscar's CSS, then set USE_LESS=True to enable the
+# on-the-fly less processor.
 USE_LESS = False
-
-COMPRESS_ENABLED = True
-COMPRESS_PRECOMPILERS = (
-    ('text/less', 'lessc {infile} {outfile}'),
-)
-COMPRESS_OFFLINE_CONTEXT = {
-    'STATIC_URL': 'STATIC_URL',
-    'use_less': USE_LESS,
-}
-
-# We do this to work around an issue in compressor where the LESS files are
-# compiled but compression isn't enabled.  When this happens, the relative URL
-# is wrong between the generated CSS file and other assets:
-# https://github.com/jezdez/django_compressor/issues/226
-COMPRESS_OUTPUT_DIR = 'oscar'
 
 # Logging
 # =======
@@ -437,9 +424,6 @@ if not os.path.exists(LOG_ROOT):
 
 THUMBNAIL_DEBUG = True
 THUMBNAIL_KEY_PREFIX = 'oscar-sandbox'
-
-# Use a custom KV store to handle integrity error
-THUMBNAIL_KVSTORE = 'oscar.sorl_kvstore.ConcurrentKVStore'
 
 # Django 1.6 has switched to JSON serializing for security reasons, but it does not
 # serialize Models. We should resolve this by extending the
