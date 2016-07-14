@@ -21,7 +21,7 @@ msgstr ""
 "Project-Id-Version: django-oscar\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-06-12 11:37+0000\n"
-"PO-Revision-Date: 2016-07-06 19:26+0300\n"
+"PO-Revision-Date: 2016-07-08 17:51+0300\n"
 "Last-Translator: wa3x <wa3x@yandex.ru>\n"
 "Language-Team: Russian (Russia) (http://www.transifex.com/projects/p/django-oscar/language/ru_RU/)\n"
 "MIME-Version: 1.0\n"
@@ -3825,7 +3825,7 @@ msgstr "нет в наличии"
 #: apps/partner/availability.py:89
 #, python-format
 msgid "a maximum of %(max)d can be bought"
-msgstr "можно купить только %(max)d шт."
+msgstr "в наличии только %(max)d шт."
 
 #: apps/partner/availability.py:103
 msgid "In stock"
