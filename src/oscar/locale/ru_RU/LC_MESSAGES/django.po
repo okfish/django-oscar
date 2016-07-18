@@ -21,7 +21,7 @@ msgstr ""
 "Project-Id-Version: django-oscar\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-06-12 11:37+0000\n"
-"PO-Revision-Date: 2016-07-08 17:51+0300\n"
+"PO-Revision-Date: 2016-07-18 18:23+0300\n"
 "Last-Translator: wa3x <wa3x@yandex.ru>\n"
 "Language-Team: Russian (Russia) (http://www.transifex.com/projects/p/django-oscar/language/ru_RU/)\n"
 "MIME-Version: 1.0\n"
@@ -3275,11 +3275,11 @@ msgstr "Скидка на ассортимент \"%(range)s\": %(value)s"
 
 #: apps/offer/benefits.py:110
 msgid "Absolute discount benefit"
-msgstr "Абсолютная выгода по скидке"
+msgstr "Скидка в абсолютных значениях"
 
 #: apps/offer/benefits.py:111
 msgid "Absolute discount benefits"
-msgstr "Абсолютные выгоды по скидке"
+msgstr "Скидки в абсолютных значениях"
 
 #: apps/offer/benefits.py:178
 #, python-format
