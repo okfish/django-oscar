@@ -32,27 +32,23 @@ env:
         - PIP_WHEEL_DIR=$HOME/.cache/pip/wheels
         - PIP_FIND_LINKS=file://$HOME/.cache/pip/wheels
     matrix:
-        - DJANGO=Django==1.8.11
-        - DJANGO=Django==1.9.3
+        - DJANGO=Django==1.8.13
+        - DJANGO=Django==1.9.7
 
 
 matrix:
     exclude:
         # Python 3.3 is not supported by Django 1.9
         - python: 3.3
-          env: "DJANGO=Django==1.9.3"
+          env: "DJANGO=Django==1.9.7"
 
 before_install:
     - pip install codecov
 
 install:
-    # Before installation, we'll run ``pip wheel``, this will build wheels for
-    # anything that doesn't already have one on PyPI.
-    - pip wheel -r requirements.txt
-    # Actually install our dependencies now, this will pull from the directory
-    # that the first command placed the Wheels into.
     - pip install --pre $DJANGO 
-    - pip install -e . -r requirements.txt 
+    - pip install -r requirements.txt 
+    - pip list
 
 before_script:
     # Create testing databases for running migrations against
@@ -63,6 +59,5 @@ script:
     - make travis
 
 after_success:
-    - coveralls
     - codecov
     - ./transifex.sh

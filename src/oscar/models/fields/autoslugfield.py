@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 import re
 
-from django.db.models import SlugField
+from django.conf import settings
 from django.utils import six
 
 from oscar.core.utils import slugify
@@ -35,6 +35,8 @@ try:
     from django.utils.encoding import force_unicode  # NOQA
 except ImportError:
     from django.utils.encoding import force_text as force_unicode  # NOQA
+
+from .slugfield import SlugField
 
 
 class AutoSlugField(SlugField):
@@ -67,10 +69,17 @@ class AutoSlugField(SlugField):
             raise ValueError("missing 'populate_from' argument")
         else:
             self._populate_from = populate_from
+            self._populate_from_org = populate_from
         self.separator = kwargs.pop('separator', six.u('-'))
         self.overwrite = kwargs.pop('overwrite', False)
         self.uppercase = kwargs.pop('uppercase', False)
         self.allow_duplicates = kwargs.pop('allow_duplicates', False)
+
+        # not override parameter if it was passed explicitly,
+        # so passed parameters takes precedence over the setting
+        if settings.OSCAR_SLUG_ALLOW_UNICODE:
+            kwargs.setdefault('allow_unicode', settings.OSCAR_SLUG_ALLOW_UNICODE)
+
         super(AutoSlugField, self).__init__(*args, **kwargs)
 
     def _slug_strip(self, value):
@@ -169,7 +178,7 @@ class AutoSlugField(SlugField):
 
     def deconstruct(self):
         name, path, args, kwargs = super(AutoSlugField, self).deconstruct()
-        kwargs['populate_from'] = self._populate_from
+        kwargs['populate_from'] = self._populate_from_org
         if not self.separator == six.u('-'):
             kwargs['separator'] = self.separator
         if self.overwrite is not False:

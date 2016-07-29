@@ -2,7 +2,8 @@
 .PHONY: install sandbox docs coverage lint travis messages compiledmessages css clean preflight sandbox_image
 
 install:
-	pip install -e . -r requirements.txt
+	pip install -r requirements.txt
+	pip install -e .[test]
 
 build_sandbox:
 	# Remove media
@@ -31,8 +32,7 @@ docs:
 	cd docs && make html
 
 coverage:
-	coverage run ./runtests.py --with-xunit
-	coverage xml -i
+	py.test --cov=oscar --cov-report=term-missing
 
 lint:
 	./lint.sh
@@ -44,7 +44,7 @@ testmigrations:
 # This target is run on Travis.ci. We lint, test and build the sandbox
 # site as well as testing migrations apply correctly. We don't call 'install'
 # first as that is run as a separate part of the Travis build process.
-travis: coverage lint build_sandbox testmigrations
+travis: install coverage lint build_sandbox testmigrations
 
 messages:
 	# Create the .po files used for i18n
@@ -73,3 +73,10 @@ todo:
 	-grep -rnH TODO *.txt
 	-grep -rnH TODO src/oscar/apps/
 	-grep -rnH "django.VERSION" src/oscar/apps
+
+
+release:
+	pip install twine wheel
+	rm -rf dist/*
+	python setup.py sdist bdist_wheel
+	twine upload -s dist/*
