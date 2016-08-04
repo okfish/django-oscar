@@ -17,11 +17,12 @@ build_sandbox:
 	sites/sandbox/manage.py loaddata sites/sandbox/fixtures/child_products.json
 	sites/sandbox/manage.py oscar_import_catalogue sites/sandbox/fixtures/*.csv
 	sites/sandbox/manage.py oscar_import_catalogue_images sites/sandbox/fixtures/images.tar.gz
-	sites/sandbox/manage.py oscar_populate_countries
+	sites/sandbox/manage.py oscar_populate_countries --initial-only
 	sites/sandbox/manage.py loaddata sites/_fixtures/pages.json sites/_fixtures/auth.json sites/_fixtures/ranges.json sites/_fixtures/offers.json
 	sites/sandbox/manage.py loaddata sites/sandbox/fixtures/orders.json
 	sites/sandbox/manage.py clear_index --noinput
 	sites/sandbox/manage.py update_index catalogue
+	sites/sandbox/manage.py thumbnail cleanup
 
 sandbox: install build_sandbox
 
@@ -35,7 +36,8 @@ coverage:
 	py.test --cov=oscar --cov-report=term-missing
 
 lint:
-	./lint.sh
+	flake8 src/oscar/
+	isort -q --recursive --diff src/
 
 testmigrations:
 	pip install -r requirements_migrations.txt
@@ -75,7 +77,7 @@ todo:
 	-grep -rnH "django.VERSION" src/oscar/apps
 
 
-release:
+release: clean
 	pip install twine wheel
 	rm -rf dist/*
 	python setup.py sdist bdist_wheel

@@ -40,9 +40,9 @@ install_requires = [
     # For phone number field
     'phonenumbers>=6.3.0,<8.0.0',
     # Used for oscar.test.contextmanagers.mock_signal_receiver
-    'mock>=1.0.1,<2.0',
+    'mock>=1.0.1,<3.0',
     # Used for oscar.test.newfactories
-    'factory-boy>=2.4.1,<2.7',
+    'factory-boy>=2.4.1,<3.0',
     # Used for automatically building larger HTML tables
     'django-tables2>=1.0.4,<1.1',
     # Used for manipulating form field attributes in templates (eg: add
@@ -51,8 +51,8 @@ install_requires = [
 ]
 
 docs_requires = [
-    'Sphinx==1.3.3',
-    'sphinxcontrib-napoleon==0.4.3',
+    'Sphinx==1.4.5',
+    'sphinxcontrib-napoleon==0.5.2',
     'sphinx_rtd_theme==0.1.9',
 ]
 
