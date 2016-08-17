@@ -4274,7 +4274,7 @@ msgstr "Дата размещения"
 
 #: apps/order/reports.py:46
 msgid "Orders placed"
-msgstr "Заказа размещены"
+msgstr "Размещенные заказы"
 
 #: apps/order/utils.py:46
 msgid "Empty baskets cannot be submitted"
