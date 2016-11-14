@@ -840,6 +840,12 @@ class AbstractRange(models.Model):
             relation.display_order = display_order
             relation.save()
 
+        # Remove product from excluded products if it was removed earlier and
+        # re-added again, thus it returns back to the range product list.
+        if product.id in self._excluded_product_ids():
+            self.excluded_products.remove(product)
+            self.invalidate_cached_ids()
+
     def remove_product(self, product):
         """
         Remove product from range. To save on queries, this function does not
@@ -1072,7 +1078,7 @@ class AbstractRangeProductFileUpload(models.Model):
         existing_ids = existing_skus.union(existing_upcs)
         new_ids = all_ids - existing_ids
 
-        Product = models.get_model('catalogue', 'Product')
+        Product = get_model('catalogue', 'Product')
         products = Product._default_manager.filter(
             models.Q(stockrecords__partner_sku__in=new_ids) |
             models.Q(upc__in=new_ids))
@@ -1089,6 +1095,7 @@ class AbstractRangeProductFileUpload(models.Model):
         dupes = set(all_ids).intersection(existing_ids)
 
         self.mark_as_processed(products.count(), len(missing_ids), len(dupes))
+        return products
 
     def extract_ids(self):
         """
