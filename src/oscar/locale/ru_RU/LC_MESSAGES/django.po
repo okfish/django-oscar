@@ -962,13 +962,13 @@ msgstr "Структура товара"
 #: templates/oscar/dashboard/orders/order_detail.html:110
 #: templates/oscar/dashboard/ranges/range_product_list.html:94
 msgid "UPC"
-msgstr "Артикул"
+msgstr "Штрих-код"
 
 #: apps/catalogue/abstract_models.py:272
 msgid ""
 "Universal Product Code (UPC) is an identifier for a product which is not "
 "specific to a particular  supplier. Eg an ISBN for a book."
-msgstr "Универсальный Код Товара (UPC) - идентификатор товара, не специфичный для поставщика. Например, ISBN для книги."
+msgstr "Универсальный Код Товара (UPC) - идентификатор товара, не специфичный для поставщика. Например, ISBN для книги. Так же, UPC - американский стандарт штрихкода"
 
 #: apps/catalogue/abstract_models.py:279
 msgid ""
@@ -4274,7 +4274,7 @@ msgstr "Дата размещения"
 
 #: apps/order/reports.py:46
 msgid "Orders placed"
-msgstr "Заказа размещены"
+msgstr "Размещенные заказы"
 
 #: apps/order/utils.py:46
 msgid "Empty baskets cannot be submitted"
