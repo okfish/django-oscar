@@ -100,9 +100,6 @@ class AbstractWeightBased(AbstractBase):
     # The attribute code to use to look up the weight of a product
     weight_attribute = 'weight'
 
-    code = 'weight-based-shipping'
-    name = _('Weight-based shipping')
-
     # The default weight to use (in kg) when a product doesn't have a weight
     # attribute.
     default_weight = models.DecimalField(
@@ -192,7 +189,10 @@ class AbstractWeightBand(models.Model):
     Represents a weight band which are used by the WeightBasedShipping method.
     """
     method = models.ForeignKey(
-        'shipping.WeightBased', related_name='bands', verbose_name=_("Method"))
+        'shipping.WeightBased',
+        on_delete=models.CASCADE,
+        related_name='bands',
+        verbose_name=_("Method"))
     upper_limit = models.DecimalField(
         _("Upper Limit"), decimal_places=3, max_digits=12,
         validators=[MinValueValidator(D('0.00'))],

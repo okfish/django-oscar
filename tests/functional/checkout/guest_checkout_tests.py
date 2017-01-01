@@ -356,7 +356,9 @@ class TestPaymentDetailsView(CheckoutMixin, WebTestCase):
         mock_method.side_effect = e
         preview = self.ready_to_place_an_order(is_guest=True)
         bank_redirect = preview.forms['place_order_form'].submit()
-        assert bank_redirect.location == bank_url
+
+        assert bank_redirect.status_code == 302
+        assert bank_redirect.url == bank_url
 
     @mock.patch('oscar.apps.checkout.views.PaymentDetailsView.handle_payment')
     def test_handles_anticipated_payments_errors_gracefully(self, mock_method):
@@ -441,6 +443,7 @@ class TestPaymentDetailsWithPreview(CheckoutMixin, WebTestCase):
         # payment forms should use the preview URL not the payment details URL
         form.action = reverse('checkout:payment-details')
         self.assertEqual(form.submit(status="*").status_code, http_client.BAD_REQUEST)
+
 
 @override_settings(OSCAR_ALLOW_ANON_CHECKOUT=True)
 class TestPlacingOrder(CheckoutMixin, WebTestCase):
