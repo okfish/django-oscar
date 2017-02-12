@@ -1,0 +1,58 @@
+=======================
+Oscar 1.5 release notes
+=======================
+
+:release: tbd
+
+Welcome to Oscar 1.5
+
+
+Table of contents:
+
+.. contents::
+    :local:
+    :depth: 1
+
+
+.. _compatibility_of_1.5:
+
+Compatibility
+-------------
+
+Oscar 1.4 is compatible with Django 1.8, 1.9 and 1.10 as well as Python 2.7,
+3.3, 3.4, 3.5 and 3.6.
+
+
+.. _new_in_1.5:
+
+What's new in Oscar 1.5?
+------------------------
+
+
+Removal of deprecated features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These methods/modules have been removed:
+
+ - Profiling middleware. See `silk`_ or `django-cprofile-middleware`_
+   for alternatives.
+ - ``Product.min_child_price_incl_tax`` and ``Product.min_child_price_excl_tax``.
+ - ``oscar.core.logging.handlers.EnvFileHandler()``
+ - The ``ellipses_page_range`` templatetag. See `django-rangepaginator`_ for
+   an alternative.
+ - ``oscar.test.decorators`` module.
+ - ``oscar.core.utils.compose`` function.
+
+
+.. _silk: https://github.com/django-silk/silk
+.. _django-cprofile-middleware: https://github.com/omarish/django-cprofile-middleware
+.. _django-rangepaginator: https://pypi.python.org/pypi/django-rangepaginator/
+
+
+Minor changes
+~~~~~~~~~~~~~
+
+
+
+Dependency changes
+------------------

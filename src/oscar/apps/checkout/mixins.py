@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import NoReverseMatch, reverse
 from django.http import HttpResponseRedirect
 
+from oscar.core.compat import user_is_authenticated
 from oscar.core.loading import get_class, get_model
 
 OrderCreator = get_class('order.utils', 'OrderCreator')
@@ -160,7 +161,7 @@ class OrderPlacementMixin(CheckoutSessionMixin):
         if not shipping_address:
             return None
         shipping_address.save()
-        if user.is_authenticated():
+        if user_is_authenticated(user):
             self.update_address_book(user, shipping_address)
         return shipping_address
 
@@ -288,7 +289,7 @@ class OrderPlacementMixin(CheckoutSessionMixin):
             'lines': order.lines.all()
         }
 
-        if not self.request.user.is_authenticated():
+        if not user_is_authenticated(self.request.user):
             # Attempt to add the anon order status URL to the email template
             # ctx.
             try:

@@ -38,26 +38,27 @@ install_requires = [
     # For manipulating search URLs
     'purl>=0.7',
     # For phone number field
-    'phonenumbers>=6.3.0,<9.0.0',
+    'django-phonenumber-field>=1.0.0,<2.0.0',
     # Used for oscar.test.contextmanagers.mock_signal_receiver
     'mock>=1.0.1,<3.0',
     # Used for oscar.test.newfactories
     'factory-boy>=2.4.1,<3.0',
     # Used for automatically building larger HTML tables
-    'django-tables2>=1.0.4,<1.1',
+    'django-tables2>=1.2,<2.0',
     # Used for manipulating form field attributes in templates (eg: add
     # a css class)
     'django-widget-tweaks>=1.4.1',
 ]
 
 docs_requires = [
-    'Sphinx==1.4.5',
-    'sphinxcontrib-napoleon==0.5.2',
+    'Sphinx==1.5.2',
+    'sphinxcontrib-napoleon==0.6.0',
     'sphinx_rtd_theme==0.1.9',
+    'sphinx-issues==0.3.1',
 ]
 
 test_requires = [
-    'WebTest==2.0.23',
+    'WebTest==2.0.24',
     'coverage==4.3.4',
     'django-webtest==1.8.0',
     'py>=1.4.31',

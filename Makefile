@@ -19,7 +19,7 @@ build_sandbox:
 	sandbox/manage.py oscar_import_catalogue_images sandbox/fixtures/images.tar.gz
 	sandbox/manage.py oscar_populate_countries --initial-only
 	sandbox/manage.py loaddata sandbox/fixtures/pages.json sandbox/fixtures/auth.json sandbox/fixtures/ranges.json sandbox/fixtures/offers.json
-	sandbox/manage.py loaddata sandbox/fixtures/orders.json
+	sandbox/manage.py loaddata sandbox/fixtures/orders.json sandbox/fixtures/promotions.json
 	sandbox/manage.py clear_index --noinput
 	sandbox/manage.py update_index catalogue
 	sandbox/manage.py thumbnail cleanup
@@ -36,12 +36,17 @@ docs:
 test:
 	py.test 
 
+retest:
+	py.test --lf 
+
 coverage:
 	py.test --cov=oscar --cov-report=term-missing
 
 lint:
 	flake8 src/oscar/
+	flake8 tests/
 	isort -q --recursive --diff src/
+	isort -q --recursive --diff tests/
 
 testmigrations:
 	pip install -r requirements_migrations.txt
