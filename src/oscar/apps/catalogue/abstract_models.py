@@ -588,7 +588,7 @@ class AbstractProduct(models.Model):
             if self.is_child:
                 # By default, Oscar's dashboard doesn't support child images.
                 # We just serve the parents image instead.
-                return self.parent.primary_image
+                return self.parent.primary_image()
             else:
                 # We return a dict with fields that mirror the key properties of
                 # the ProductImage class so this missing image can be used
@@ -646,6 +646,12 @@ class AbstractProduct(models.Model):
     @cached_property
     def num_approved_reviews(self):
         return self.reviews.approved().count()
+
+    @property
+    def sorted_recommended_products(self):
+        """Keeping order by recommendation ranking."""
+        return [r.recommendation for r in self.primary_recommendations
+                                              .select_related('recommendation').all()]
 
 
 class AbstractProductRecommendation(models.Model):
