@@ -73,17 +73,25 @@ Backwards incompatible changes in Oscar 1.5
   - ``OrderedProductFormSet`` moved to ``oscar.apps.dashboard.promotions.formsets``;
   - ``LineFormset`` moved to ``oscar.apps.wishlists.formsets``.
 
-.. _incompatible_in_1.5:
-
-Backwards incompatible changes in Oscar 1.5
--------------------------------------------
-
-- `SimpleAddToBasketForm` doesn't override the quantity field any
+- ``SimpleAddToBasketForm`` doesn't override the quantity field any
   more. Instead, it just hides the field declared by AddToBasketForm
-  and sets the quantity to one. This means `SimpleAddToBasketForm`
+  and sets the quantity to one. This means ``SimpleAddToBasketForm``
   doesn't need to be overridden for most cases, but please check
   things still work as expected for you if you have customized it.
 
+- ``OSCAR_CURRENCY_FORMAT`` setting changed to dictionary form in order to support multi-currency for
+  currency formatting. You can set `format`, `format_type` and `currency_digits` in it.
+  Please refer to documentation for an example.
+
+- Dashboard order list doesn't have shortcut filters any more, pass `status` parameter instead of
+  `order_status` for the relevant filtering.
+
+- Google Analytics tracking code has been migrated to Universal Analytics.
+
+- ``GOOGLE_ANALYTICS_ID`` and ``USE_LESS`` settings were renamed into ``OSCAR_GOOGLE_ANALYTICS_ID`` and
+  ``OSCAR_USE_LESS`` respectively in order to keep all Oscar settings under common namespace.
+
+- Remove ``display_version`` and ``version`` variables from templates and template context.
 
 Dependency changes
 ------------------

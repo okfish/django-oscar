@@ -18,7 +18,7 @@ sys.path.append(os.path.join(PROJECT_DIR, 'src'))
 from oscar import get_version  # noqa isort:skip
 
 install_requires = [
-    'django>=1.8.8,<1.11',
+    'django>=1.8.8,<1.12',
     # PIL is required for image fields, Pillow is the "friendly" PIL fork
     'pillow>=3.4.2',
     # We use the ModelFormSetView from django-extra-views for the basket
@@ -60,7 +60,7 @@ docs_requires = [
 test_requires = [
     'WebTest==2.0.25',
     'coverage==4.3.4',
-    'django-webtest==1.8.0',
+    'django-webtest==1.9.1',
     'py>=1.4.31',
     'pytest==3.0.6',
     'pytest-cov==2.4.0',

@@ -200,9 +200,10 @@ class AutoSlugFieldTest(TestCase):
         })
         writer = MigrationWriter(migration)
         output = writer.as_string()
-        # It should NOT be unicode.
-        self.assertIsInstance(output, six.binary_type,
-                              "Migration as_string returned unicode")
+
+        if isinstance(output, six.text_type):
+            output = output.encode('utf-8')
+
         # We don't test the output formatting - that's too fragile.
         # Just make sure it runs for now, and that things look alright.
         context = {

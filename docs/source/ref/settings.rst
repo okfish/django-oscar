@@ -63,6 +63,14 @@ Default: ``'oscar_history'``
 
 The name of the cookie for showing recently viewed products.
 
+``OSCAR_HIDDEN_FEATURES``
+-------------------------
+
+Defaults: ``[]``
+
+Allows to disable particular Oscar feature in application and templates.
+More information in the :doc:`/howto/how_to_disable_an_app_or_feature` document.
+
 Pagination
 ----------
 
@@ -86,7 +94,9 @@ all default to 20.
 
 A dictionary that specifies the facets to use with the search backend.  It
 needs to be a dict with keys ``fields`` and ``queries`` for field- and
-query-type facets.  The default is::
+query-type facets. Field-type facets can get an 'options' element with parameters like facet
+sorting, filtering, etc.
+The default is::
 
     OSCAR_SEARCH_FACETS = {
         'fields': OrderedDict([
@@ -363,10 +373,19 @@ This will be used by the currency templatetag.
 
 Default: ``None``
 
-This can be used to customise currency formatting. The value will be passed to
-the ``format_currency`` function from the `Babel library`_.
+Dictionary with arguments for the ``format_currency`` function from the `Babel library`_.
+Contains next options: `format`, `format_type`, `currency_digits`.
+For example::
 
-.. _`Babel library`: http://babel.pocoo.org/docs/api/numbers/#babel.numbers.format_currency
+    OSCAR_CURRENCY_FORMAT = {
+        'USD': {
+            'currency_digits': False,
+            'currency_digits': "accounting",
+        },
+        'EUR': { .. }
+    }
+
+.. _`Babel library`: http://babel.pocoo.org/en/latest/api/numbers.html#babel.numbers.format_currency
 
 Upload/media settings
 =====================
@@ -485,3 +504,16 @@ Misc settings
 Default: ``['oscar_recently_viewed_products',]``
 
 Which cookies to delete automatically when the user logs out.
+
+``OSCAR_GOOGLE_ANALYTICS_ID``
+-----------------------------
+
+Tracking ID for Google Analytics tracking code, available as `google_analytics_id` in the template
+context. If setting is set, enables Universal Analytics tracking code for page views and
+transactions.
+
+
+``OSCAR_USE_LESS``
+------------------
+
+Allows to use raw LESS styles directly. Refer to :ref:`less-css` document for more details.
