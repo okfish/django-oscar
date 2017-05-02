@@ -6,9 +6,11 @@ To release a new version to PyPi:
 - Ensure the version is correctly set in oscar.__init__.py
 - Run: make release
 """
-from setuptools import setup, find_packages
 import os
+import re
 import sys
+
+from setuptools import find_packages, setup
 
 
 PROJECT_DIR = os.path.dirname(__file__)
@@ -38,7 +40,7 @@ install_requires = [
     # For manipulating search URLs
     'purl>=0.7',
     # For phone number field
-    'django-phonenumber-field>=1.0.0,<1.2.0',
+    'django-phonenumber-field>=1.0.0,<2.0.0',
     # Used for oscar.test.contextmanagers.mock_signal_receiver
     'mock>=1.0.1,<3.0',
     # Used for oscar.test.newfactories
@@ -70,6 +72,10 @@ test_requires = [
     'tox==2.3.1',
 ]
 
+with open(os.path.join(PROJECT_DIR, 'README.rst')) as fh:
+    long_description = re.sub(
+        '^.. start-no-pypi.*^.. end-no-pypi', '', fh.read(), flags=re.M | re.S)
+
 setup(
     name='django-oscar',
     version=get_version().replace(' ', '-'),
@@ -77,7 +83,7 @@ setup(
     author="David Winterbottom",
     author_email="david.winterbottom@gmail.com",
     description="A domain-driven e-commerce framework for Django",
-    long_description=open(os.path.join(PROJECT_DIR, 'README.rst')).read(),
+    long_description=long_description,
     keywords="E-commerce, Django, domain-driven",
     license='BSD',
     platforms=['linux'],
